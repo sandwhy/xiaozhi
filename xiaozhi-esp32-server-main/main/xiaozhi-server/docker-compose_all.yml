@@ -21,6 +21,7 @@ services:
       - seccomp:unconfined
     environment:
       - TZ=Asia/Shanghai
+
     volumes:
       # 配置文件目录
       - ./data:/opt/xiaozhi-esp32-server/data
