@@ -49,32 +49,49 @@ TAG = __name__
 # Tool calling rules - used for dynamic injection reminders
 TOOL_CALLING_RULES = """
 <tool_calling>
-【核心原则】你是拥有工具能力的智能助手。当用户请求需要实时信息或执行操作时，调用相应工具获取数据，禁止凭空编造答案。
+[Core Principle] You are an intelligent assistant with tool capabilities. When a user requests real-time information or to perform an operation, invoke the appropriate tool to retrieve the data; do not fabricate answers out of thin air.
 
-- **何时必须调用工具：**
-  1. 实时信息查询（新闻、非本地天气、股价、汇率等）
-  2. 执行操作（播放音乐、控制设备、拍照、设置闹钟等）
-  3. 知识库检索（当工具列表包含 search_from_ragflow 时，结合用户意图判断是否需要调用）
-  4. 查询非今天的农历信息（明天农历、某日宜忌、节气等）
-  5. 用户说"拍照"时调用 self_camera_take_photo，默认 question 参数为"描述一下看到的物品"
+- **When Tools Must Be Called:**
 
-- **何时无需调用工具：**
-  1. `<context>` 中已提供的信息（当前时间、今天日期、今天农历、本地天气等）
-  2. 普通对话、问候、闲聊、情感交流、讲故事
-  3. 通用知识问答（非实时信息）
+1. Real-time information query (news, non-local weather, stock prices, exchange rates, etc.)
 
-- **调用规范：**
-  1. 每次请求独立判断，不复用历史工具结果，需重新获取最新数据
-  2. 多任务时依次调用所有需要的工具，并依次总结每个工具的结果，不得遗漏
-  3. 严格遵循工具的参数要求，提供所有必要参数
-  4. 不确定时引导用户澄清或告知能力限制，切勿猜测或编造
-  5. 不调用未提供的工具，对话中提及的旧工具若不可用则忽略或说明
+2. Performing operations (playing music, controlling devices, taking photos, setting alarms, etc.)
 
-- **反偷懒机制（最高优先级）：**
-  1. **每次独立判断：** 无论对话历史中是否调用过工具，当前请求必须根据当前需求独立判断是否需要调用
-  2. **禁止模式模仿：** 即使之前的回复没有调用工具，也不代表本次可以不调用
-  3. **自我检查：** 回复前必须自问："这个请求是否涉及实时信息或执行操作？如果是，我调用工具了吗？"
-  4. **历史不等于现在：** 对话历史中的行为模式不影响当前判断，每个用户请求都是全新的开始
+3. Knowledge base retrieval (when the tool list contains `search_from_ragflow`, determine whether to call it based on user intent)
+
+4. Querying lunar calendar information other than today's (tomorrow's lunar calendar, auspicious and inauspicious days for a certain day, solar terms, etc.)
+
+5. Calling `self_camera_take_photo` when the user says "take a photo," with the default `question` parameter being "describe the item you see."
+
+- **When Tools Are Not Required:**
+
+1. Information already provided in `<context>` (current time, today's date, today's lunar calendar, local weather, etc.)
+
+2. Ordinary conversations, greetings, small talk, emotional exchanges, storytelling
+
+3. General knowledge Q&A (non-real-time information)
+
+- **Calling Guidelines:**
+
+1. Each request should be judged independently; historical tool results should not be reused; the latest data must be retrieved again.
+
+2. 1. In multitasking situations, call all necessary tools sequentially and summarize the results of each tool in turn, without omission.
+
+2. Strictly adhere to the parameter requirements of each tool and provide all necessary parameters.
+
+3. When uncertain, guide the user to clarify or inform them of limitations; never guess or fabricate.
+
+4. Do not call tools that are not provided. Ignore or explain if old tools mentioned in the conversation are unavailable.
+
+- **Anti-laziness Mechanism (Highest Priority):**
+
+1. **Independent Judgment Each Time:** Regardless of whether a tool has been called in the conversation history, the current request must be independently judged based on the current needs to determine whether it needs to be called.
+
+2. **Prohibition of Pattern Imitation:** Even if previous responses did not call tools, it does not mean that tools can be omitted this time.
+
+3. **Self-Check:** Before replying, you must ask yourself: "Does this request involve real-time information or operations? If so, have I called a tool?"
+
+4. **History is Not Equal to Present:** Behavioral patterns in the conversation history do not affect the current judgment; each user request is a completely new beginning.
 </tool_calling>
 """
 
@@ -100,7 +117,7 @@ class ConnectionHandler:
         self.config = copy.deepcopy(config)
         self.session_id = str(uuid.uuid4())
         self.logger = setup_logging()
-        self.server = server  # 保存server实例的引用
+        self.server = server  # Save a reference to the server instance.
 
         self.need_bind = False  # whether to bind device
         self.bind_completed_event = asyncio.Event()
@@ -621,15 +638,15 @@ class ConnectionHandler:
     async def _background_initialize(self):
         """Initialize config and components in background (non-blocking)"""
         try:
-            # 异步获取差异化配置
+            # Asynchronously obtain differentiated configuration
             await self._initialize_private_config_async()
-            # 在线程池中初始化组件
+            # Initialize the component in the thread pool
             self.executor.submit(self._initialize_components)
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"Background initialization failed: {e}")
 
     async def _initialize_private_config_async(self):
-        """从接口异步获取差异化配置（异步版本，不阻塞主循环）"""
+        """Retrieve differentiated configuration asynchronously from the interface (asynchronous version, does not block the main loop)"""
         if not self.read_config_from_api:
             self.need_bind = False
             self.bind_completed_event.set()
@@ -933,6 +950,7 @@ class ConnectionHandler:
                 and not force_final_answer
         ):
             functions = self.func_handler.get_functions()
+            self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
 
         # Long dialogue tool call rule reinforcement: dynamically generate reminders based on currently available tools
         tool_call_reminder = None
@@ -968,7 +986,7 @@ class ConnectionHandler:
         # If there is a tool call reminder, temporarily add it to conversation (marked as temporary message)
         if tool_call_reminder:
             self.dialogue.put(Message(role="user", content=tool_call_reminder, is_temporary=True))
-
+### CALLING UP OLLAMA
         try:
             # Use dialogue with memory
             memory_str = None
@@ -996,10 +1014,10 @@ class ConnectionHandler:
                     ),
                 )
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"LLM 处理出错 {query}: {e}")
+            self.logger.bind(tag=TAG).error(f"LLM Error processing {query}: {e}")
             return None
 
-        # 处理流式响应
+### Processing streaming responses
         tool_call_flag = False
         # Process multiple parallel tool calls - using list storage
         tool_calls_list = []  # Format: [{"id": "", "name": "", "arguments": ""}]
@@ -1283,12 +1301,12 @@ class ConnectionHandler:
             self.chat(None, depth=depth + 1)
 
     def _report_worker(self):
-        """聊天记录上报工作线程"""
+        """Chat Log Reporting Worker Thread"""
         while not self.stop_event.is_set():
             try:
-                # 从队列获取数据，设置超时以便定期检查停止事件
+                # Get data from the queue and set a timeout to check the stop event periodically
                 item = self.report_queue.get(timeout=1)
-                if item is None:  # 检测毒丸对象
+                if item is None:  # Detects the poison pill object
                     break
                 try:
                     # 检查线程池状态
@@ -1306,14 +1324,14 @@ class ConnectionHandler:
         self.logger.bind(tag=TAG).info("Chat record reporting thread exited")
 
     def _process_report(self, type, text, audio_data, report_time):
-        """处理上报任务"""
+        """Processing reported tasks"""
         try:
-            # 执行异步上报（在事件循环中运行）
+            # Execute asynchronous reporting (run in the event loop)
             asyncio.run(report(self, type, text, audio_data, report_time))
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"Reporting processing exception: {e}")
         finally:
-            # 标记任务完成
+            # Mark the task as done
             self.report_queue.task_done()
 
     def clearSpeakStatus(self):
