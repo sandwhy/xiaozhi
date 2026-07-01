@@ -202,7 +202,7 @@ class App {
                     const devices = await navigator.mediaDevices.enumerateDevices();
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
                     if (videoDevices.length > 1) {
-                        if (cameraSwitch) cameraSwitch.classList.add('active'); 
+                        if (cameraSwitch) cameraSwitch.classList.add('active');
                     }
                     cameraContainer.classList.add('active');
 
@@ -237,18 +237,18 @@ class App {
                 }
             };
 
-            window.switchCamera = async() => {
+            window.switchCamera = async () => {
                 if (window.switchCameraTimer) return;
                 if (this.cameraStream) {
                     const currentTransform = window.getComputedStyle(cameraContainer).transform;
                     const originalTransform = currentTransform === 'none' ? 'translate(0px, 0px)' : currentTransform;
                     cameraContainer.style.setProperty('--original-transform', originalTransform);
                     cameraContainer.classList.add('flip');
-                    if (cameraSwitchMask) cameraSwitchMask.style.opacity = 0; 
+                    if (cameraSwitchMask) cameraSwitchMask.style.opacity = 0;
                     this.currentFacingMode = this.currentFacingMode === 'user' ? 'environment' : 'user';
                     window.stopCamera();
                     window.startCamera();
-                    
+
                     window.switchCameraTimer = setTimeout(() => {
                         if (this.currentFacingMode === 'user') {
                             cameraVideo.style.transform = 'scaleX(-1)';
@@ -258,7 +258,7 @@ class App {
                         window.switchCameraTimer = null;
                         cameraContainer.classList.remove('flip');
                         cameraContainer.style.removeProperty('--original-transform');
-                        if (cameraSwitchMask) cameraSwitchMask.style.opacity = 1; 
+                        if (cameraSwitchMask) cameraSwitchMask.style.opacity = 1;
                     }, 500);
                 }
             };
