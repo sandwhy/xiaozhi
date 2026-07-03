@@ -986,7 +986,7 @@ class ConnectionHandler:
         # If there is a tool call reminder, temporarily add it to conversation (marked as temporary message)
         if tool_call_reminder:
             self.dialogue.put(Message(role="user", content=tool_call_reminder, is_temporary=True))
-### CALLING UP OLLAMA
+        ### CALLING UP OLLAMA
         try:
             # Use dialogue with memory
             memory_str = None
@@ -1017,7 +1017,7 @@ class ConnectionHandler:
             self.logger.bind(tag=TAG).error(f"LLM Error processing {query}: {e}")
             return None
 
-### Processing streaming responses
+        ### Processing streaming responses
         tool_call_flag = False
         # Process multiple parallel tool calls - using list storage
         tool_calls_list = []  # Format: [{"id": "", "name": "", "arguments": ""}]

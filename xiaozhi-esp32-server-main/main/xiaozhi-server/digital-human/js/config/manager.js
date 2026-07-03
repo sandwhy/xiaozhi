@@ -1,9 +1,9 @@
-// 配置管理模块
+// Configuration management module
 
-// 默认唤醒词列表
-export const DEFAULT_WAKE_WORDS = '你好小智\n你好小志\n小爱同学\n你好小鑫\n你好小新\n小美同学\n小龙小龙\n喵喵同学\n小滨小滨\n小冰小冰\n嘿你好呀';
+// Default wake words list
+export const DEFAULT_WAKE_WORDS = 'hello xiaozhi\nxiaozhi xiaozhi\nhi xiaozhi\n你好小智\n你好小志';
 
-// 生成随机MAC地址
+// Generate random MAC address
 function generateRandomMac() {
     const hexDigits = '0123456789ABCDEF';
     let mac = '';
@@ -16,7 +16,7 @@ function generateRandomMac() {
     return mac;
 }
 
-// 加载配置
+// Load configuration
 export function loadConfig() {
     const deviceMacInput = document.getElementById('deviceMac');
     const deviceNameInput = document.getElementById('deviceName');
@@ -26,7 +26,7 @@ export function loadConfig() {
     const wakewordEnabledInput = document.getElementById('wakewordEnabled');
     const wakewordListInput = document.getElementById('wakewordList');
 
-    // 从localStorage加载MAC地址，如果没有则生成新的
+    // Load MAC address from localStorage, generate a new one if not exists
     let savedMac = localStorage.getItem('xz_tester_deviceMac');
     if (!savedMac) {
         savedMac = generateRandomMac();
@@ -34,7 +34,7 @@ export function loadConfig() {
     }
     deviceMacInput.value = savedMac;
 
-    // 从localStorage加载其他配置
+    // Load other configurations from localStorage
     const savedDeviceName = localStorage.getItem('xz_tester_deviceName');
     if (savedDeviceName) {
         deviceNameInput.value = savedDeviceName;
@@ -74,7 +74,7 @@ export function loadConfig() {
     }
 }
 
-// 保存配置
+// Save configuration
 export function saveConfig() {
     const deviceMacInput = document.getElementById('deviceMac');
     const deviceNameInput = document.getElementById('deviceName');
@@ -101,16 +101,16 @@ export function saveConfig() {
     }
 }
 
-// 获取配置值
+// Get configuration values
 export function getConfig() {
-    // 从DOM获取值
+    // Get values from DOM
     const deviceMac = document.getElementById('deviceMac')?.value.trim() || '';
     const deviceName = document.getElementById('deviceName')?.value.trim() || '';
     const clientId = document.getElementById('clientId')?.value.trim() || '';
     const emojiEnabled = document.getElementById('emojiEnabled')?.value !== 'false';
 
     return {
-        deviceId: deviceMac,  // 使用MAC地址作为deviceId
+        deviceId: deviceMac,  // Use MAC address as deviceId
         deviceName,
         deviceMac,
         clientId,
@@ -118,7 +118,7 @@ export function getConfig() {
     };
 }
 
-// 保存连接URL
+// Save connection URL
 export function saveConnectionUrls() {
     const otaUrl = document.getElementById('otaUrl').value.trim();
     const wsUrl = document.getElementById('serverUrl').value.trim();

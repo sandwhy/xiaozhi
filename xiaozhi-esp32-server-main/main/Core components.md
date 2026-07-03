@@ -88,3 +88,31 @@ get_lunar_function_desc = {
 
 ## End of Tools
 
+## Prompting
+- base prompt comes form .config.yaml
+- prompt_manager.py can add context information into the base prompt
+- agennt-basep-prompt.txt is the base prompt template
+
+<do figgure out later> when the server prompts the llm model, it sends out instructions and prompts. takes the response and filters it, then uses that. but it could also force the ai to ommit things while thinking and such..
+
+runnning deepseek-r1:1.5b caused issuse where the ai rambles on and on, long, kind of incoherent responses
+possible reasons for this being the model is a thinking model, which our server strips, and its a small model being injected a large prompt file 'agennt-base-prompt.txt'
+
+what actually happened today?
+found out that main loop processes occurs at conenction.py, chat function
+this loop processes the messages from the esp32
+and generates the responses, using the cores
+
+tested the llm performance in local test server, found issues, prolly because its a thinking type and small. 
+
+llm.py calls up ollama.py, within ollama.py we are prompting the ai, then modifying it directly to be used in tts (standard procedures for tts apparently)
+
+changed to a non thinking model, works quite well
+
+<for expansion> modify the prompt to suite the orignial vision. change the tts sounds.
+
+## End of Prompting
+
+## Memory 
+
+![alt text](image.png)
