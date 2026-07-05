@@ -106,5 +106,5 @@ class MemoryProvider(MemoryProviderBase):
             logger.bind(tag=TAG).debug(f"Query results: {memories_str}")
             return memories_str
         except Exception as e:
-            logger.bind(tag=TAG).error(f"查询记忆失败: {str(e)}")
+            logger.bind(tag=TAG).error(f"Memory retrieval failed: {str(e)}")
             return ""

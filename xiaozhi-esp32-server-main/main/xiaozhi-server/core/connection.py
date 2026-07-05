@@ -49,49 +49,49 @@ TAG = __name__
 # Tool calling rules - used for dynamic injection reminders
 TOOL_CALLING_RULES = """
 <tool_calling>
-[Core Principle] You are an intelligent assistant with tool capabilities. When a user requests real-time information or to perform an operation, invoke the appropriate tool to retrieve the data; do not fabricate answers out of thin air.
+    [Core Principle] You are an intelligent assistant with tool capabilities. When a user requests real-time information or to perform an operation, invoke the appropriate tool to retrieve the data; do not fabricate answers out of thin air.
 
-- **When Tools Must Be Called:**
+    - **When Tools Must Be Called:**
 
-1. Real-time information query (news, non-local weather, stock prices, exchange rates, etc.)
+    1. Real-time information query (news, non-local weather, stock prices, exchange rates, etc.)
 
-2. Performing operations (playing music, controlling devices, taking photos, setting alarms, etc.)
+    2. Performing operations (playing music, controlling devices, taking photos, setting alarms, etc.)
 
-3. Knowledge base retrieval (when the tool list contains `search_from_ragflow`, determine whether to call it based on user intent)
+    3. Knowledge base retrieval (when the tool list contains `search_from_ragflow`, determine whether to call it based on user intent)
 
-4. Querying lunar calendar information other than today's (tomorrow's lunar calendar, auspicious and inauspicious days for a certain day, solar terms, etc.)
+    4. Querying lunar calendar information other than today's (tomorrow's lunar calendar, auspicious and inauspicious days for a certain day, solar terms, etc.)
 
-5. Calling `self_camera_take_photo` when the user says "take a photo," with the default `question` parameter being "describe the item you see."
+    5. Calling `self_camera_take_photo` when the user says "take a photo," with the default `question` parameter being "describe the item you see."
 
-- **When Tools Are Not Required:**
+    - **When Tools Are Not Required:**
 
-1. Information already provided in `<context>` (current time, today's date, today's lunar calendar, local weather, etc.)
+    1. Information already provided in `<context>` (current time, today's date, today's lunar calendar, local weather, etc.)
 
-2. Ordinary conversations, greetings, small talk, emotional exchanges, storytelling
+    2. Ordinary conversations, greetings, small talk, emotional exchanges, storytelling
 
-3. General knowledge Q&A (non-real-time information)
+    3. General knowledge Q&A (non-real-time information)
 
-- **Calling Guidelines:**
+    - **Calling Guidelines:**
 
-1. Each request should be judged independently; historical tool results should not be reused; the latest data must be retrieved again.
+    1. Each request should be judged independently; historical tool results should not be reused; the latest data must be retrieved again.
 
-2. 1. In multitasking situations, call all necessary tools sequentially and summarize the results of each tool in turn, without omission.
+    2. 1. In multitasking situations, call all necessary tools sequentially and summarize the results of each tool in turn, without omission.
 
-2. Strictly adhere to the parameter requirements of each tool and provide all necessary parameters.
+    2. Strictly adhere to the parameter requirements of each tool and provide all necessary parameters.
 
-3. When uncertain, guide the user to clarify or inform them of limitations; never guess or fabricate.
+    3. When uncertain, guide the user to clarify or inform them of limitations; never guess or fabricate.
 
-4. Do not call tools that are not provided. Ignore or explain if old tools mentioned in the conversation are unavailable.
+    4. Do not call tools that are not provided. Ignore or explain if old tools mentioned in the conversation are unavailable.
 
-- **Anti-laziness Mechanism (Highest Priority):**
+    - **Anti-laziness Mechanism (Highest Priority):**
 
-1. **Independent Judgment Each Time:** Regardless of whether a tool has been called in the conversation history, the current request must be independently judged based on the current needs to determine whether it needs to be called.
+    1. **Independent Judgment Each Time:** Regardless of whether a tool has been called in the conversation history, the current request must be independently judged based on the current needs to determine whether it needs to be called.
 
-2. **Prohibition of Pattern Imitation:** Even if previous responses did not call tools, it does not mean that tools can be omitted this time.
+    2. **Prohibition of Pattern Imitation:** Even if previous responses did not call tools, it does not mean that tools can be omitted this time.
 
-3. **Self-Check:** Before replying, you must ask yourself: "Does this request involve real-time information or operations? If so, have I called a tool?"
+    3. **Self-Check:** Before replying, you must ask yourself: "Does this request involve real-time information or operations? If so, have I called a tool?"
 
-4. **History is Not Equal to Present:** Behavioral patterns in the conversation history do not affect the current judgment; each user request is a completely new beginning.
+    4. **History is Not Equal to Present:** Behavioral patterns in the conversation history do not affect the current judgment; each user request is a completely new beginning.
 </tool_calling>
 """
 
@@ -226,6 +226,31 @@ class ConnectionHandler:
         # Initialize prompt manager
         self.prompt_manager = PromptManager(self.config, self.logger)
 
+    ###### ------------ #######
+        self.is_alive = True
+
+    async def async_loop(self):
+        try:
+            while self.is_alive:
+                # 1. Execute your custom state evaluation
+                # (Passing 'self' allows the checker to inspect session data or call tools)
+                # await check_character_state(self)
+                self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
+                
+                # 2. Control the check interval (e.g., check every 5 seconds)
+                # Using non-blocking asyncio.sleep yields control back to the main server loop
+                await asyncio.sleep(5.0)
+
+        except asyncio.CancelledError:
+            print("[MPlush Monitor] Background monitor task was cancelled.")
+            self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
+        except Exception as e:
+            print(f"[MPlush Monitor] Error encountered in state loop: {e}")
+            self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
+        finally:
+            print("[MPlush Monitor] Autonomous state checking loop stopped.")
+            self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
+
     async def handle_connection(self, ws: websockets.ServerConnection):
         try:
             # Get running event loop (must be in async context)
@@ -271,6 +296,8 @@ class ConnectionHandler:
 
             # Initialize config and components in background (non-blocking)
             asyncio.create_task(self._background_initialize())
+
+            asyncio.create_task(self.async_loop())
 
             try:
                 async for message in self.websocket:
@@ -577,6 +604,15 @@ class ConnectionHandler:
         if enhanced_prompt:
             self.change_system_prompt(enhanced_prompt)
             self.logger.bind(tag=TAG).debug("System prompt enhanced and updated")
+        
+    def _init_session_memory(self):
+        self.session_memory = {
+            "current_task": "idle",
+            "task_plan": "",
+            "success_scenario": "",
+            "phase": 1,
+            "last_update_time": time.time()
+        }
 
     def _init_report_threads(self):
         """Initialize ASR and TTS reporting threads"""
@@ -790,21 +826,21 @@ class ConnectionHandler:
             save_to_file=not self.read_config_from_api,
         )
 
-        # 获取记忆总结配置
+        # Get memory summary configuration
         memory_config = self.config["Memory"]
         memory_type = self.config["Memory"][self.config["selected_module"]["Memory"]][
             "type"
         ]
-        # 如果使用 nomen 或 mem_report_only，直接返回
+        # If using nomen or mem_report_only, return directly
         if memory_type == "nomem" or memory_type == "mem_report_only":
             return
-        # 使用 mem_local_short 模式
+        # Use mem_local_short mode
         elif memory_type == "mem_local_short":
             memory_llm_name = memory_config[self.config["selected_module"]["Memory"]][
                 "llm"
             ]
             if memory_llm_name and memory_llm_name in self.config["LLM"]:
-                # 如果配置了专用LLM，则创建独立的LLM实例
+                # If a dedicated LLM is configured, create an independent LLM instance
                 from core.utils import llm as llm_utils
 
                 memory_llm_config = self.config["LLM"][memory_llm_name]
@@ -813,7 +849,7 @@ class ConnectionHandler:
                     memory_llm_type, memory_llm_config
                 )
                 self.logger.bind(tag=TAG).info(
-                    f"为记忆总结创建了专用LLM: {memory_llm_name}, 类型: {memory_llm_type}"
+                    f"A dedicated LLM was created for memory summarization.: {memory_llm_name}, type: {memory_llm_type}"
                 )
                 self.memory.set_llm(memory_llm)
             else:

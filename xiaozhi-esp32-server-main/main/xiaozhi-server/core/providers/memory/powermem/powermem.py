@@ -319,7 +319,6 @@ class MemoryProvider(MemoryProviderBase):
     async def get_user_profile(self) -> str:
         """
         Get user profile from PowerMem (only available in UserMemory mode).
-        
         In PowerMem 0.3.0+, user profile is automatically extracted during add()
         and cached in last_profile_content.
 

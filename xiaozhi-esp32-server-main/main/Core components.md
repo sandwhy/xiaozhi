@@ -114,5 +114,38 @@ changed to a non thinking model, works quite well
 ## End of Prompting
 
 ## Memory 
-
 ![alt text](image.png)
+
+currently using powermem. just had to set it up a bit. 
+there are a couple ai working on different parts of it. for conversation and memory saving (embedding) they use different ai
+seems like mcp is involved, but im not sure. seems like i did little to no configuration to make it work tho, its like plug and play........
+
+## End of Memory
+
+## Intent / tools / mcp
+its all interconected, 
+    Intent: the different configurations is the different methods ai identifies which tool to use. There is one where it passes another ai, and the other is a simpler more robust json list.
+    Tools: custom python code that that helps ai get specific information / calculations api like
+    MCP: basically api for LLMs.
+## End of Intent / tools / mcp
+
+
+## something
+1. How the Scope Changes the Engineering Rules
+If you were building this for real-world deployment, the architectural rules would diverge significantly based on user behavior:
+
+The "30–60 Min Play Thing" (Toy Mode): * Rules: High-intensity stimulation, rapid state transitions.
+
+Engineering Constraint: Emotions must fluctuate quickly so the child experiences them within a brief window. Autonomy needs to trigger every 1–2 minutes of silence, or the child loses interest. Long-term memory tracking is low priority.
+
+The "Bring Around All Day Companion" (Tamagotchi Mode):
+
+Rules: Low passive power consumption, trickle-drained metrics.
+
+Engineering Constraint: Hardware state machines must handle long deep-sleep/wake cycles. Attention shouldn't drop to zero in 5 minutes; it needs to decay slowly over hours. Proactive behaviors must be strictly throttled to prevent interrupting the child at school or draining the ESP32 battery.
+
+The "After-School / Learning Partner" (Session Mode):
+
+Rules: Goal-oriented, structured state logic.
+
+Engineering Constraint: Centralized context tracking via memory systems (like PowerMem/MCP). The dynamic state machine needs to track a "boredom/fatigue index" that reflects learning engagement rather than pure isolation.

@@ -57,13 +57,13 @@ class PromptManager:
         self.base_prompt_template = None
         self.last_update_time = 0
 
-        # 导入全局缓存管理器
+        # Import global cache manager
         from core.utils.cache.manager import cache_manager, CacheType
 
         self.cache_manager = cache_manager
         self.CacheType = CacheType
 
-        # 初始化上下文源
+        # Initialize context source
         from core.utils.context_provider import ContextDataProvider
 
         self.context_provider = ContextDataProvider(config, self.logger)
@@ -79,19 +79,19 @@ class PromptManager:
                 template_path = "agent-base-prompt.txt"
             cache_key = f"prompt_template:{template_path}"
 
-            # 先从缓存获取
+            # Get from cache first
             cached_template = self.cache_manager.get(self.CacheType.CONFIG, cache_key)
             if cached_template is not None:
                 self.base_prompt_template = cached_template
                 self.logger.bind(tag=TAG).debug("Load base prompt template from cache")
                 return
 
-            # 缓存未命中，从文件读取
+            # Cache miss, read from file
             if os.path.exists(template_path):
                 with open(template_path, "r", encoding="utf-8") as f:
                     template_content = f.read()
 
-                # 存入缓存（CONFIG类型默认不自动过期，需要手动失效）
+                # Cache (CONFIG type defaults to not auto-expire, manual invalidation required)
                 self.cache_manager.set(
                     self.CacheType.CONFIG, cache_key, template_content
                 )
@@ -116,7 +116,7 @@ class PromptManager:
                 f"No cached prompt for device {device_id}, using passed prompt"
             )
 
-        # 使用传入的提示词并缓存（如果有设备ID）
+        # Use the passed prompt and cache it (if device ID is available)
         if device_id:
             device_cache_key = f"device_prompt:{device_id}"
             self.cache_manager.set(self.CacheType.CONFIG, device_cache_key, user_prompt)

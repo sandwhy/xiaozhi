@@ -7,6 +7,26 @@
     "Currently, three transmission modes are supported: stdio (standard input/output), sse (Server-Sent Events), and streamable-http (streaming HTTP)."
   ],
   "mcpServers": {
+    "powermem": {
+      "command": "python",
+      "args": [
+        "-m",
+        "powermem.server"
+      ],
+      "env": {
+        "DATABASE_PROVIDER": "sqlite",
+        "SQLITE_PATH": "./data/powermem_dev.db",
+        "LLM_PROVIDER": "openai",
+        "LLM_API_KEY": "ollama",
+        "LLM_MODEL": "qwen2.5:1.5b",
+        "LLM_BASE_URL": "http://localhost:11434/v1",
+        "EMBEDDING_PROVIDER": "openai",
+        "EMBEDDING_API_KEY": "ollama",
+        "EMBEDDING_MODEL": "nomic-embed-text",
+        "EMBEDDING_BASE_URL": "http://localhost:11434/v1"
+      },
+      "disabled": false
+    },
     "Home Assistant": {
       "command": "mcp-proxy",
       "args": [
@@ -21,7 +41,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/username/Desktop",
+        "/Users/ASUS/Desktop",
         "/path/to/other/allowed/dir"
       ],
       "link": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem"

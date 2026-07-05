@@ -29,6 +29,36 @@ get_lunar_function_desc = {
     },
 }
 
+get_lunar_function_desc = {
+    "type": "function",
+    "function": {
+        "name": "get_lunar",
+        "description": (
+            "Used to get traditional Chinese lunar calendar and almanac (Huangli) information for a specific date. "
+            "Users can specify the content to query, such as: lunar date, Heavenly Stems and Earthly Branches (Tiangan Dizhi), "
+            "solar terms, Chinese zodiac sign, astrological star sign, Eight Characters (Bazi), auspicious or taboo activities (Yiji), etc. "
+            "If no specific query content is provided, it defaults to returning the Stem-Branch year and lunar calendar date. "
+            "For basic queries like 'What is the lunar calendar today' or 'today's lunar date', please directly use the information "
+            "provided in the system context; do not invoke this tool."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "The target date to query in YYYY-MM-DD format (e.g., 2024-01-01). If omitted, defaults to the current active date.",
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Specific information fields to extract, such as lunar date, Stem-Branch, festivals, solar terms, zodiac, star sign, Bazi, taboos, etc.",
+                },
+            },
+            "required": [],
+        },
+    },
+}
+
+
 
 @register_function("get_lunar", get_lunar_function_desc, ToolType.WAIT)
 def get_lunar(date=None, query=None):
@@ -37,7 +67,7 @@ def get_lunar(date=None, query=None):
     """
     from core.utils.cache.manager import cache_manager, CacheType
 
-    # 如果提供了日期参数，则使用指定日期；否则使用当前日期
+    # If date is provided, use the specified date; otherwise use the current date
     if date:
         try:
             now = datetime.strptime(date, "%Y-%m-%d")
@@ -52,11 +82,11 @@ def get_lunar(date=None, query=None):
 
     current_date = now.strftime("%Y-%m-%d")
 
-    # 如果 query 为 None，则使用默认文本
+    # If query is None, use the default text
     if query is None:
-        query = "默认查询干支年和农历日期"
+        query = "Default query for stem-branch year and lunar calendar date"
 
-    # 尝试从缓存获取农历信息
+    # Try to get lunar calendar information from cache
     lunar_cache_key = f"lunar_info_{current_date}"
     cached_lunar_info = cache_manager.get(CacheType.LUNAR, lunar_cache_key)
     if cached_lunar_info:
@@ -121,7 +151,7 @@ def get_lunar(date=None, query=None):
         + "(默认返回干支年和农历日期；仅在要求查询宜忌信息时才返回本日宜忌)"
     )
 
-    # 缓存农历信息
+    # Cache lunar calendar information
     cache_manager.set(CacheType.LUNAR, lunar_cache_key, response_text)
 
     return ActionResponse(Action.REQLLM, response_text, None)
