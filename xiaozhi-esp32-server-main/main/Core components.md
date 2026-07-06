@@ -172,6 +172,7 @@ The Fix: Rely entirely on Native Function Calling. You provide the update_sessio
 4. Dynamic Prompt / Tool Interception
 How it works: On every message turn, your message router reads the file. If it sees "phase": 2, it drops the onboarding tool from the roster entirely and changes the text base system instruction array. This prevents the LLM from accidentally trying to re-onboard the kid mid-session.
 
+
 [session_memory.json] ──> Read Phase ──> [Prompt Manager] ──> Selects Template
                                                                     │
 [Sensory Task Thread] ──> Read Metrics ─────────────────────────────┼──> [Prompt Enhancer]
@@ -191,3 +192,12 @@ How it works: On every message turn, your message router reads the file. If it s
             ┌───────────────┴───────────────┐
             ▼ (Normal Response)             ▼ (Tool Invocation)
      Stream back to kid             Execute Python code ──> Update JSON Phase ──> Loop Continues
+
+On every message turn (inside core/handle/textMessageProcessor.py or the request router before calling Ollama):
+[User Utterance] ──> Read session_memory.json
+                            │
+                            ├──> [Prompt Manager]: Selects base template matching the current Phase
+                            └──> [Prompt Enhancer]: Appends active Telemetry Metrics & Live Time
+                                        │
+                                        ▼
+                            [Final Dynamic Prompt] ──> Bind Phase-Specific Tools ──> [Ollama LLM]

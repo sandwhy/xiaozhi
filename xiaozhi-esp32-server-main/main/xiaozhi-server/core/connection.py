@@ -116,6 +116,7 @@ class ConnectionHandler:
             _intent,
             server=None,
     ):
+    #### initialize variables ####
         self.common_config = config
         self.config = copy.deepcopy(config)
         self.session_id = str(uuid.uuid4())
@@ -229,7 +230,7 @@ class ConnectionHandler:
         # Initialize prompt manager
         self.prompt_manager = PromptManager(self.config, self.logger)
 
-    ###### ------------ #######
+    ###### My variables #######
         # self.is_alive = True
 
     # async def async_loop(self):

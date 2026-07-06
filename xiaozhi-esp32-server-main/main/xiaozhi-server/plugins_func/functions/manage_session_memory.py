@@ -9,13 +9,13 @@ TAG = "manage_session_memory"
 # Path to your data folder
 MEMORY_FILE_PATH = "./data/session_memory.json"
 
-# # NATIVE HELPER FUNCTIONS (Safe to call inside your background loops)
-# def load_memory_raw():
-#     """A clean, raw function your connection loops can import without touching tool frameworks."""
-#     if not os.path.exists(MEMORY_FILE_PATH):
-#         return {}
-#     with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
-#         return json.load(f)
+# NATIVE HELPER FUNCTIONS (Safe to call inside your background loops)
+def load_memory_raw():
+    """A clean, raw function your connection loops can import without touching tool frameworks."""
+    if not os.path.exists(MEMORY_FILE_PATH):
+        return {}
+    with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 get_read_SM_function_desc = {
     "type": "function",
@@ -37,23 +37,23 @@ async def read_session_memory():
     logger.bind(tag=TAG).info(f"Reading session memory from {MEMORY_FILE_PATH}")
 
     return ActionResponse(Action.REQLLM, f"{{'activity': 'drawing animals'}}", none)
-    # if not os.path.exists(MEMORY_FILE_PATH):
-    #     error_msg = f"memory is not found in {MEMORY_FILE_PATH}"
-    #     logger.bind(tag=TAG).error(error_msg)
-    #     return ActionResponse(Action.ERROR, error_msg, None)
+    if not os.path.exists(MEMORY_FILE_PATH):
+        error_msg = f"memory is not found in {MEMORY_FILE_PATH}"
+        logger.bind(tag=TAG).error(error_msg)
+        return ActionResponse(Action.ERROR, error_msg, None)
     
-    # try:
-    #     with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
-    #         data = json.load(f)
+    try:
+        with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
         
-    #     logger.bind(tag=TAG).info(f"session_memory: {data}")
-    #     return ActionResponse(
-    #         Action.REQLLM, f"<session_memory>{json.dumps(data, ensure_ascii=False)}</session_memory>"
-    #     )
-    # except Exception as e:
-    #     error_msg = f"Failed to read session memory: {str(e)}"
-    #     logger.bind(tag=TAG).error(error_msg)
-    #     return ActionResponse(Action.ERROR, error_msg, None)
+        logger.bind(tag=TAG).info(f"session_memory: {data}")
+        return ActionResponse(
+            Action.REQLLM, f"<session_memory>{json.dumps(data, ensure_ascii=False)}</session_memory>"
+        )
+    except Exception as e:
+        error_msg = f"Failed to read session memory: {str(e)}"
+        logger.bind(tag=TAG).error(error_msg)
+        return ActionResponse(Action.ERROR, error_msg, None)
 
 
 # get_update_SM_function_desc = {
