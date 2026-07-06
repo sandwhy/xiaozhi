@@ -2,8 +2,6 @@ from datetime import datetime
 import cnlunar
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
 
-logger = setup_logging()
-
 get_lunar_function_desc = {
     "type": "function",
     "function": {
@@ -31,34 +29,33 @@ get_lunar_function_desc = {
     },
 }
 
-# get_lunar_function_desc = {
-#     "type": "function",
-#     "function": {
-#         "name": "get_lunar",
-#         "description": (
-#             "Used to get traditional Chinese lunar calendar and almanac (Huangli) information for a specific date. "
-#             "Users can specify the content to query, such as: lunar date, Heavenly Stems and Earthly Branches (Tiangan Dizhi), "
-#             "solar terms, Chinese zodiac sign, astrological star sign, Eight Characters (Bazi), auspicious or taboo activities (Yiji), etc. "
-#             "If no specific query content is provided, it defaults to returning the Stem-Branch year and lunar calendar date. "
-#             "For basic queries like 'What is the lunar calendar today' or 'today's lunar date', please directly use the information "
-#             "provided in the system context; do not invoke this tool."
-#         ),
-#         "parameters": {
-#             "type": "object",
-#             "properties": {
-#                 "date": {
-#                     "type": "string",
-#                     "description": "The target date to query in YYYY-MM-DD format (e.g., 2024-01-01). If omitted, defaults to the current active date.",
-#                 },
-#                 "query": {
-#                     "type": "string",
-#                     "description": "Specific information fields to extract, such as lunar date, Stem-Branch, festivals, solar terms, zodiac, star sign, Bazi, taboos, etc.",
-#                 },
-#             },
-#             "required": [],
-#         },
-#     },
-# }
+get_lunar_function_desc = {
+    "type": "function",
+    "function": {
+        "name": "get_lunar",
+        "description": (
+            "Used to get traditional Chinese lunar calendar and almanac (Huangli) information for a specific date. "
+            "Users can specify the content to query, such as: lunar date, Heavenly Stems and Earthly Branches (Tiangan Dizhi), "
+            "solar terms, Chinese zodiac sign, astrological star sign, Eight Characters (Bazi), auspicious or taboo activities (Yiji), etc. "
+            "If no specific query content is provided, it defaults to returning the Stem-Branch year and lunar calendar date. "
+            "For basic queries like 'What is the lunar calendar today' or 'today's lunar date', please directly use the information "
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "The target date to query in YYYY-MM-DD format (e.g., 2024-01-01). If omitted, defaults to the current active date.",
+                },
+                "query": {
+                    "type": "string",
+                    "description": "Specific information fields to extract, such as lunar date, Stem-Branch, festivals, solar terms, zodiac, star sign, Bazi, taboos, etc.",
+                },
+            },
+            "required": [],
+        },
+    },
+}
 
 
 
@@ -67,10 +64,9 @@ def get_lunar(date=None, query=None):
     """
     用于获取当前的阴历/农历，和天干地支、节气、生肖、星座、八字、宜忌等黄历信息
     """
-    from core.utils.cache.manager import cache_manager, CacheType
 
-    logger.bind(tag=TAG).info(f"Reading lunar information from ```````````````````````````````````````````````````````````````````")
-    print("HELLO IM HERE PLEASE HELP ME HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+    print("------get_lunar------ PLEAAASE HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+    from core.utils.cache.manager import cache_manager, CacheType
 
     # If date is provided, use the specified date; otherwise use the current date
     if date:

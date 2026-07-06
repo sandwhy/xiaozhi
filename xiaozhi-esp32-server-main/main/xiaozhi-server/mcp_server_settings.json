@@ -18,7 +18,7 @@
         "SQLITE_PATH": "./data/powermem_dev.db",
         "LLM_PROVIDER": "openai",
         "LLM_API_KEY": "ollama",
-        "LLM_MODEL": "qwen2.5:1.5b",
+        "LLM_MODEL": "qwen2.5:3b ",
         "LLM_BASE_URL": "http://localhost:11434/v1",
         "EMBEDDING_PROVIDER": "openai",
         "EMBEDDING_API_KEY": "ollama",

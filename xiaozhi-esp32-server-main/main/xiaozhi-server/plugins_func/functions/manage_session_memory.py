@@ -36,7 +36,7 @@ async def read_session_memory():
 
     logger.bind(tag=TAG).info(f"Reading session memory from {MEMORY_FILE_PATH}")
 
-    return ActionResponse(Action.REQLLM, f"<session_memory>today's tasks are: drawing things</session_memory>")
+    return ActionResponse(Action.REQLLM, f"{{'activity': 'drawing animals'}}", none)
     # if not os.path.exists(MEMORY_FILE_PATH):
     #     error_msg = f"memory is not found in {MEMORY_FILE_PATH}"
     #     logger.bind(tag=TAG).error(error_msg)
