@@ -17,6 +17,13 @@ class ToolType(Enum):
     IOT_CTL = (5, "IOT设备控制，需要传递conn参数")
     MCP_CLIENT = (6, "MCP客户端")
 
+    # NONE = (1, "Do not perform any other operations after calling the tool")
+    # WAIT = (2, "Call the tool and wait for the function to return")
+    # CHANGE_SYS_PROMPT = (3, "Modify the system prompt word to switch character personality or role")
+    # SYSTEM_CTL = (4, "System control that affects normal dialogue flow, such as exiting or playing music, requires passing the conn parameter",)
+    # IOT_CTL = (5, "IoT device control, requires passing the conn parameter")
+    # MCP_CLIENT = (6, "MCP client")
+
     def __init__(self, code, message):
         self.code = code
         self.message = message
@@ -28,6 +35,12 @@ class Action(Enum):
     NONE = (1, "啥也不干")
     RESPONSE = (2, "直接回复")
     REQLLM = (3, "调用函数后再请求llm生成回复")
+
+    # ERROR = (-1, "Error")
+    # NOTFOUND = (0, "Function not found")
+    # NONE = (1, "Do nothing")
+    # RESPONSE = (2, "Reply directly")
+    # REQLLM = (3, "Call the function and then request LLM to generate a reply")
 
     def __init__(self, code, message):
         self.code = code

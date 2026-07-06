@@ -56,6 +56,7 @@ class UnifiedToolHandler:
 
     async def _initialize(self):
         """异步初始化"""
+        
         try:
             # 自动导入插件模块
             auto_import_modules("plugins_func.functions")
@@ -118,7 +119,7 @@ class UnifiedToolHandler:
             self.logger.error(f"初始化Home Assistant失败: {e}")
 
     def get_functions(self) -> List[Dict[str, Any]]:
-        """获取所有工具的函数描述"""
+        """Get function descriptions for all tools"""
         return self.tool_manager.get_function_descriptions()
 
     def current_support_functions(self) -> List[str]:
@@ -139,7 +140,8 @@ class UnifiedToolHandler:
     async def handle_llm_function_call(
         self, conn, function_call_data: Dict[str, Any]
     ) -> Optional[ActionResponse]:
-        """处理LLM函数调用"""
+        """Handle LLM function call"""
+        print("\n\n\n\n\n   HELLO  THIS IS   A   TO HANDLE FUNCTION CALL  \n\n\n\n")
         try:
             # 处理多函数调用
             if "function_calls" in function_call_data:

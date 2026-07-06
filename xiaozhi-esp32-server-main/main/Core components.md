@@ -149,3 +149,45 @@ The "After-School / Learning Partner" (Session Mode):
 Rules: Goal-oriented, structured state logic.
 
 Engineering Constraint: Centralized context tracking via memory systems (like PowerMem/MCP). The dynamic state machine needs to track a "boredom/fatigue index" that reflects learning engagement rather than pure isolation.
+
+## End of something
+
+## Phase Flow
+1. write code to create session memory json
+
+2. Inject Phase-Specific System Prompts
+How it works: Before hitting Ollama, your script reads the phase value from the JSON. Instead of a single massive prompt, you maintain a dictionary of prompt components:
+
+PROMPTS[1]: "You are in Phase 1 (Onboarding). Be chatty and figure out the task, steps, and success scenario. Once you have all three, call the update_session_goals tool immediately."
+
+PROMPTS[2]: "You are in Phase 2 (Monitoring). The user is working on [TASK]. Maintain a normal conversation. Do not use onboarding tools."
+
+3. have a thinking llm check if user response is appropriate for the phase criteria, then have it autonomously call update session goals function
+3. The Optimization: Ditch the Second "Thinking" LLM
+The Critique: Running a separate LLM call just to inspect if the user gave the right info doubles your API cost and interaction latency.
+
+The Fix: Rely entirely on Native Function Calling. You provide the update_session_goals tool schema to Ollama only while phase == 1. The LLM naturally knows when it has collected enough data from the child to populate the arguments. The moment it executes the tool, your Python code processes the arguments, writes them to the JSON file, and explicitly overrides the state parameter: "phase": 2.
+
+4. write code to somehow detect that phase has shifted and modify the prompt injection.......
+4. Dynamic Prompt / Tool Interception
+How it works: On every message turn, your message router reads the file. If it sees "phase": 2, it drops the onboarding tool from the roster entirely and changes the text base system instruction array. This prevents the LLM from accidentally trying to re-onboard the kid mid-session.
+
+[session_memory.json] ──> Read Phase ──> [Prompt Manager] ──> Selects Template
+                                                                    │
+[Sensory Task Thread] ──> Read Metrics ─────────────────────────────┼──> [Prompt Enhancer]
+                                                                    │
+                                                                    ▼
+[Finalized Payload] ──> [Ollama Engine]
+
+
+[User Utterance] ──> Read session_memory.json (Find Phase ID)
+                            │
+                            ├──> Inject Dynamic System Prompt for that Phase
+                            └──> Bind Phase-Specific Tools
+                            │
+                            ▼
+                    [Ollama LLM Engine]
+                            │
+            ┌───────────────┴───────────────┐
+            ▼ (Normal Response)             ▼ (Tool Invocation)
+     Stream back to kid             Execute Python code ──> Update JSON Phase ──> Loop Continues

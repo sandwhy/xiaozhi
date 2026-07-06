@@ -43,6 +43,9 @@ from core.utils.voiceprint_provider import VoiceprintProvider
 from core.utils.util import get_system_error_response
 from core.utils import textUtils
 
+from core.utils.session_storage import init_session_memory
+
+
 
 TAG = __name__
 
@@ -227,29 +230,29 @@ class ConnectionHandler:
         self.prompt_manager = PromptManager(self.config, self.logger)
 
     ###### ------------ #######
-        self.is_alive = True
+        # self.is_alive = True
 
-    async def async_loop(self):
-        try:
-            while self.is_alive:
-                # 1. Execute your custom state evaluation
-                # (Passing 'self' allows the checker to inspect session data or call tools)
-                # await check_character_state(self)
-                self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
+    # async def async_loop(self):
+    #     try:
+    #         while self.is_alive:
+    #             # 1. Execute your custom state evaluation
+    #             # (Passing 'self' allows the checker to inspect session data or call tools)
+    #             # await check_character_state(self)
+    #             self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
                 
-                # 2. Control the check interval (e.g., check every 5 seconds)
-                # Using non-blocking asyncio.sleep yields control back to the main server loop
-                await asyncio.sleep(5.0)
+    #             # 2. Control the check interval (e.g., check every 5 seconds)
+    #             # Using non-blocking asyncio.sleep yields control back to the main server loop
+    #             await asyncio.sleep(5.0)
 
-        except asyncio.CancelledError:
-            print("[MPlush Monitor] Background monitor task was cancelled.")
-            self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
-        except Exception as e:
-            print(f"[MPlush Monitor] Error encountered in state loop: {e}")
-            self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
-        finally:
-            print("[MPlush Monitor] Autonomous state checking loop stopped.")
-            self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
+    #     except asyncio.CancelledError:
+    #         print("[MPlush Monitor] Background monitor task was cancelled.")
+    #         self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
+    #     except Exception as e:
+    #         print(f"[MPlush Monitor] Error encountered in state loop: {e}")
+    #         self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
+    #     finally:
+    #         print("[MPlush Monitor] Autonomous state checking loop stopped.")
+    #         self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
 
     async def handle_connection(self, ws: websockets.ServerConnection):
         try:
@@ -297,7 +300,7 @@ class ConnectionHandler:
             # Initialize config and components in background (non-blocking)
             asyncio.create_task(self._background_initialize())
 
-            asyncio.create_task(self.async_loop())
+            # asyncio.create_task(self.async_loop())
 
             try:
                 async for message in self.websocket:
@@ -544,6 +547,8 @@ class ConnectionHandler:
             )
 
     def _initialize_components(self):
+        self.logger.bind(tag=TAG).info(f"[Initialize Components] Initializing components")
+
         try:
             if self.tts is None:
                 self.tts = self._initialize_tts()
@@ -590,9 +595,31 @@ class ConnectionHandler:
             self._init_report_threads()
             """Update system prompt"""
             self._init_prompt_enhancement()
+            """initialize session memory"""
+            self._init_session_memory()
 
         except Exception as e:
             self.logger.bind(tag=TAG).error(f"Failed to instantiate component: {e}")
+
+    ###### ------------ #######
+
+    def _init_session_memory(self):
+        self.logger.bind(tag=TAG).info(f"[Memory Init] Init session memory")
+
+        """
+        Initializes the session memory architecture. Calls the utility 
+        layer to establish the JSON persistence template and binds the 
+        live telemetry counters to the current network instance.
+        """
+
+        # # Ensure a session ID is established for this connection instance
+        # if not hasattr(self, 'session_id') or not self.session_id:
+        #     self.session_id = f"sess_{int(time.time())}"
+
+        # 1. Initialize JSON storage architecture via decoupled utility module
+        self.session_file_path = init_session_memory(self.session_id)
+        
+        self.logger.bind(tag=TAG).info(f"[INITIALIZING CURRENT SESSION MEMORY JSON] Bound storage path to active instance: {self.session_file_path}")
 
     def _init_prompt_enhancement(self):
 
@@ -604,15 +631,6 @@ class ConnectionHandler:
         if enhanced_prompt:
             self.change_system_prompt(enhanced_prompt)
             self.logger.bind(tag=TAG).debug("System prompt enhanced and updated")
-        
-    def _init_session_memory(self):
-        self.session_memory = {
-            "current_task": "idle",
-            "task_plan": "",
-            "success_scenario": "",
-            "phase": 1,
-            "last_update_time": time.time()
-        }
 
     def _init_report_threads(self):
         """Initialize ASR and TTS reporting threads"""
@@ -816,6 +834,7 @@ class ConnectionHandler:
             self.memory = modules["memory"]
 
     def _initialize_memory(self):
+        self.logger.bind(tag=TAG).info(f"[Initialize Memory] Initializing memory")
         if self.memory is None:
             return
         """Initialize memory module"""
@@ -960,6 +979,9 @@ class ConnectionHandler:
 
             # Detect interval since last consecutive tool non-call
             if self.tool_call_stats['last_call_turn'] >= 0:
+                # self.logger.bind(tag=TAG).info(
+                #     f"Last tool call turn: {self.tool_call_stats['last_call_turn']}"
+                # )
                 turns_since_last = current_turn - self.tool_call_stats['last_call_turn']
                 if turns_since_last > 3:  # More than 3 turns without calling
                     self.logger.bind(tag=TAG).warning(
@@ -1257,13 +1279,11 @@ class ConnectionHandler:
 
     def _get_tool_summary(self, functions: list) -> str:
         """
-        从工具定义中提取摘要，用于规则强化注入
-
+        Extract a digest from the tool definition for rule reinforcement injection.
         Args:
-            functions: 工具列表
-
+            functions: List of tools
         Returns:
-            str: 工具名称字符串
+            str: Tool name string
         """
         if not functions:
             return ""
@@ -1278,7 +1298,7 @@ class ConnectionHandler:
 
     def _handle_function_result(self, tool_results, depth, streamed_text=""):
         need_llm_tools = []
-
+        self.logger.bind(tag=TAG).info(f"[handle_function_result] {tool_results}")
         for result, tool_call_data in tool_results:
             if result.action in [
                 Action.RESPONSE,
@@ -1295,7 +1315,7 @@ class ConnectionHandler:
                     self.tts.store_tts_text(self.sentence_id, text)
                 self.dialogue.put(Message(role="assistant", content=text))
             elif result.action == Action.REQLLM:
-                # 收集需要 LLM 处理的工具
+                # Collect the tools that require LLM processing
                 need_llm_tools.append((result, tool_call_data))
             else:
                 pass

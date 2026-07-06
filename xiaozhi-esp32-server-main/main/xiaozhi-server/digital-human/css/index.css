@@ -1425,8 +1425,8 @@ body {
     }
 
     .chat-stream {
-        width: 200px;
-        max-height: 150px;
+        width: 900px;
+        max-height: 800px;
     }
 
     .audio-visualizer {
@@ -1469,8 +1469,8 @@ body {
     }
 
     .chat-stream {
-        width: 350px;
-        max-height: 250px;
+        width: 900px;
+        max-height: 800px;
     }
 
     .audio-visualizer {
