@@ -78,21 +78,21 @@ async def startToChat(conn: "ConnectionHandler", text):
             await max_out_size(conn)
             return
 
-    # manual 模式下不打断正在播放的内容
+    # In manual mode, do not interrupt the content that is currently playing
     if conn.client_is_speaking and conn.client_listen_mode != "manual":
         await handleAbortMessage(conn)
 
-    # 首先进行意图分析，使用实际文本内容
+    # The intent was not processed; continue with the normal chat flow, using the actual text content.
     intent_handled = await handle_user_intent(conn, actual_text)
 
     if intent_handled:
-        # 如果意图已被处理，不再进行聊天
+        # If the intention has been processed, the chat will stop.  
         return
 
-    # 意图未被处理，继续常规聊天流程，使用实际文本内容
+    # Intent not processed, continue the regular chat process, using the actual text content
     await send_stt_message(conn, actual_text)
 
-    # 准备开始新会话
+    # Ready to start a new session
     conn.client_abort = False
 
     conn.executor.submit(conn.chat, actual_text)

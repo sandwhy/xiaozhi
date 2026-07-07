@@ -126,10 +126,10 @@ class Dialogue:
     def get_llm_dialogue_with_memory(
             self, memory_str: str = None, voiceprint_config: dict = None
     ) -> List[Dict[str, str]]:
-        # 构建对话
+        # Build dialogue
         dialogue = []
 
-        # 添加系统提示和记忆
+        # Add system prompts and memories
         system_message = next(
             (msg for msg in self.dialogue if msg.role == "system"), None
         )

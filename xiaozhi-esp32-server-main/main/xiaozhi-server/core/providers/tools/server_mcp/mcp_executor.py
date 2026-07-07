@@ -24,7 +24,7 @@ class ServerMCPExecutor(ToolExecutor):
     async def execute(
         self, conn, tool_name: str, arguments: Dict[str, Any]
     ) -> ActionResponse:
-        """执行服务端MCP工具"""
+        """Execute server-side MCP tool"""
         if not self._initialized or not self.mcp_manager:
             return ActionResponse(
                 action=Action.ERROR,

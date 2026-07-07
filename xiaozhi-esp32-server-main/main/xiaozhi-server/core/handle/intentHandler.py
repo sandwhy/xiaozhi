@@ -134,7 +134,7 @@ async def process_intent_result(
                 function_args = intent_data["function_call"]["arguments"]
                 if function_args is None:
                     function_args = {}
-            # 确保参数是字符串格式的JSON
+            # Ensure the parameters are in JSON string format.
             if isinstance(function_args, dict):
                 function_args = json.dumps(function_args)
 
@@ -158,13 +158,13 @@ async def process_intent_result(
             # 上报工具调用
             enqueue_tool_report(conn, function_name, tool_input)
 
-            # 使用executor执行函数调用和结果处理
+            # Use the executor to execute function calls and process results.
             def process_function_call():
                 conn.dialogue.put(Message(role="user", content=original_text))
                 
-                # 工具调用超时时间
+                # Tool call timeout
                 tool_call_timeout = int(conn.config.get("tool_call_timeout", 30))
-                # 使用统一工具处理器处理所有工具调用
+                # Use unified tool processor to handle all tool calls.
                 try:
                     result = asyncio.run_coroutine_threadsafe(
                         conn.func_handler.handle_llm_function_call(
@@ -178,7 +178,7 @@ async def process_intent_result(
                         action=Action.ERROR, result="工具调用超时，请一会再试下哈", response="工具调用超时，请一会再试下哈"
                     )
 
-                # 上报工具调用结果
+                # Report tool call results
                 if result:
                     enqueue_tool_report(conn, function_name, tool_input, str(result.result) if result.result else None, report_tool_call=False)
 

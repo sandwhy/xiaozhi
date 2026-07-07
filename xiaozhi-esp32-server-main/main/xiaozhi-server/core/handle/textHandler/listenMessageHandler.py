@@ -26,7 +26,7 @@ class ListenTextMessageHandler(TextMessageHandler):
         if "mode" in msg_json:
             conn.client_listen_mode = msg_json["mode"]
             conn.logger.bind(tag=TAG).debug(
-                f"客户端拾音模式：{conn.client_listen_mode}"
+                f"Client-side sound pickup mode：{conn.client_listen_mode}"
             )
         if msg_json["state"] == "start":
             # 设备从播放模式切回录音模式,清除所有音频状态和缓冲区
@@ -54,24 +54,24 @@ class ListenTextMessageHandler(TextMessageHandler):
                     original_text
                 )
 
-                # 识别是否是唤醒词
+                # Identify whether it is a wake word
                 is_wakeup_words = filtered_text in conn.config.get("wakeup_words")
-                # 是否开启唤醒词回复
+                # Enable wake word reply?
                 enable_greeting = conn.config.get("enable_greeting", True)
 
                 if is_wakeup_words and not enable_greeting:
-                    # 如果是唤醒词，且关闭了唤醒词回复，就不用回答
+                    # If it is a wake word and wake word reply is disabled, then no need to reply
                     await send_stt_message(conn, original_text)
                     await send_tts_message(conn, "stop", None)
                     conn.client_is_speaking = False
                 elif is_wakeup_words:
                     conn.just_woken_up = True
-                    # 上报纯文字数据（复用ASR上报功能，但不提供音频数据）
+                    # Report plain text data (reuses ASR reporting function, but does not provide audio data).
                     enqueue_asr_report(conn, "start the day well", [])
                     await startToChat(conn, "start the day well")
                 else:
                     conn.just_woken_up = True
-                    # 上报纯文字数据（复用ASR上报功能，但不提供音频数据）
+                    # Report plain text data (reuses ASR reporting function, but does not provide audio data).
                     enqueue_asr_report(conn, original_text, [])
-                    # 否则需要LLM对文字内容进行答复
+                    # Otherwise, an LLM response to the text content is required.
                     await startToChat(conn, original_text)

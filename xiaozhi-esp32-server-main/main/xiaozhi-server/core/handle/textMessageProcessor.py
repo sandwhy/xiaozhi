@@ -26,6 +26,7 @@ class TextMessageProcessor:
 
                 # Record log
                 conn.logger.bind(tag=TAG).info(f"[textMessageHandler] Received {message_type} message: {message}")
+                conn.logger.bind(tag=TAG).info(f"[textMessageHandler] Received {msg_json}")
 
                 # Get and execute handler
                 handler = self.registry.get_handler(message_type)

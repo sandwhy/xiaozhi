@@ -1,4 +1,4 @@
-# During development, please create a 'data' directory in the project root, and then create an empty file named [.config.yaml] inside it.
+  # During development, please create a 'data' directory in the project root, and then create an empty file named [.config.yaml] inside it.
 # Any configurations you want to modify or override should be done in [.config.yaml], not by modifying this [config.yaml] file.
 # The system prioritizes [data/.config.yaml]. If a setting is missing there, it falls back to this [config.yaml].
 # This keeps configuration minimal and protects your secret keys.

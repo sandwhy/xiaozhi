@@ -46,7 +46,7 @@ from core.utils import textUtils
 #### my imports ####
 from core.utils.cache.manager import cache_manager, CacheType
 from core.utils.session_storage import init_session_memory
-from core.utils.dynamic_prompt_manager import DynamicPromptManager
+
 
 
 TAG = __name__
@@ -231,37 +231,37 @@ class ConnectionHandler:
 
         # Initialize prompt manager
         self.prompt_manager = PromptManager(self.config, self.logger)
-        # self.dynamic_prompt_manager = DynamicPromptManager(self.logger)
 
     ###### My variables #######
-        # self.is_alive = True
+        self.is_alive = True
         self.session_id = str(uuid.uuid4())
 
             # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID1: {self.session_id}")
             # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID2: {cache_manager.get(CacheType.SESSION_ID, "session_id")}")
 
     #### my old code #######
-        # async def async_loop(self):
-        #     try:
-        #         while self.is_alive:
-        #             # 1. Execute your custom state evaluation
-        #             # (Passing 'self' allows the checker to inspect session data or call tools)
-        #             # await check_character_state(self)
-        #             self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
-                    
-        #             # 2. Control the check interval (e.g., check every 5 seconds)
-        #             # Using non-blocking asyncio.sleep yields control back to the main server loop
-        #             await asyncio.sleep(5.0)
+    # async def async_loop(self):
+    #     try:
+    #         while self.is_alive:
+    #             # 1. Execute your custom state evaluation
+    #             # (Passing 'self' allows the checker to inspect session data or call tools)
+    #             # await check_character_state(self)
 
-        #     except asyncio.CancelledError:
-        #         print("[MPlush Monitor] Background monitor task was cancelled.")
-        #         self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
-        #     except Exception as e:
-        #         print(f"[MPlush Monitor] Error encountered in state loop: {e}")
-        #         self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
-        #     finally:
-        #         print("[MPlush Monitor] Autonomous state checking loop stopped.")
-        #         self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
+    #             self.logger.bind(tag=TAG).info(f"[          async_loop is running            ], {self.client_ip} : {self.device_id}")
+                
+    #             # 2. Control the check interval (e.g., check every 5 seconds)
+    #             # Using non-blocking asyncio.sleep yields control back to the main server loop
+    #             await asyncio.sleep(10.0)
+
+    #     except asyncio.CancelledError:
+    #         print("[MPlush Monitor] Background monitor task was cancelled.")
+    #         self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
+    #     except Exception as e:
+    #         print(f"[MPlush Monitor] Error encountered in state loop: {e}")
+    #         self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
+    #     finally:
+    #         print("[MPlush Monitor] Autonomous state checking loop stopped.")
+    #         self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
 
     async def handle_connection(self, ws: websockets.ServerConnection):
         try:
@@ -1015,7 +1015,8 @@ class ConnectionHandler:
                 and not force_final_answer
         ):
             functions = self.func_handler.get_functions()
-            self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
+            # self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
+            self.logger.bind(tag=TAG).info(f"Got functions")
 
         # Long dialogue tool call rule reinforcement: dynamically generate reminders based on currently available tools
         tool_call_reminder = None
@@ -1051,7 +1052,7 @@ class ConnectionHandler:
         # If there is a tool call reminder, temporarily add it to conversation (marked as temporary message)
         if tool_call_reminder:
             self.dialogue.put(Message(role="user", content=tool_call_reminder, is_temporary=True))
-        ### CALLING UP OLLAMA
+
         try:
             # Use dialogue with memory
             memory_str = None
