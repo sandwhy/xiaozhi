@@ -201,3 +201,26 @@ On every message turn (inside core/handle/textMessageProcessor.py or the request
                                         │
                                         ▼
                             [Final Dynamic Prompt] ──> Bind Phase-Specific Tools ──> [Ollama LLM]
+
+## End of Phase Flow
+
+## Prompt Injection
+- still need to figure out how the prompts are injected. 
+current clue:
+    self.dialogue.update_system_message(self.prompt) or maybe not idk
+
+<cache 
+    def set(
+        self,
+        cache_type: CacheType,[this]
+        key: str, [this]
+        value: Any, [this]
+        ttl: Optional[float] = None,
+        namespace: str = "",
+    ) -> None:
+
+    def get(
+    self, cache_type: CacheType, key: str, namespace: str = "")
+    
+
+## End of Prompt Injection

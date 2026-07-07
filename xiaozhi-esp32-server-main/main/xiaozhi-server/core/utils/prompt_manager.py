@@ -96,7 +96,7 @@ class PromptManager:
                     self.CacheType.CONFIG, cache_key, template_content
                 )
                 self.base_prompt_template = template_content
-                self.logger.bind(tag=TAG).debug("[load base prompt] Successfully loaded base prompt template and cached it")
+                self.logger.bind(tag=TAG).debug(f"[load base prompt] Successfully loaded base prompt template and cached it\n things: {cache_key} : {template_content[:100]}")
             else:
                 self.logger.bind(tag=TAG).warning(f"File {template_path} not found")
         except Exception as e:
@@ -122,7 +122,7 @@ class PromptManager:
             self.cache_manager.set(self.CacheType.CONFIG, device_cache_key, user_prompt)
             self.logger.bind(tag=TAG).debug(f"[quick prompt] Prompt for device {device_id} has been cached")
 
-        self.logger.bind(tag=TAG).info(f"[quick prompt] Using quick prompt: {user_prompt[:50]}...")
+        self.logger.bind(tag=TAG).info(f"[quick prompt] Using quick prompt: {user_prompt}")
         return user_prompt
 
     def _get_current_time_info(self) -> tuple:

@@ -46,7 +46,7 @@ from core.utils import textUtils
 #### my imports ####
 from core.utils.cache.manager import cache_manager, CacheType
 from core.utils.session_storage import init_session_memory
-
+from core.utils.dynamic_prompt_manager import DynamicPromptManager
 
 
 TAG = __name__
@@ -231,6 +231,7 @@ class ConnectionHandler:
 
         # Initialize prompt manager
         self.prompt_manager = PromptManager(self.config, self.logger)
+        # self.dynamic_prompt_manager = DynamicPromptManager(self.logger)
 
     ###### My variables #######
         # self.is_alive = True
