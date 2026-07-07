@@ -197,7 +197,7 @@ class PromptManager:
                     or "weather_info" in self.base_prompt_template
                 )
             ):
-                # 获取位置信息（使用全局缓存）
+                # Get location information (using global cache)
                 local_address = self._get_location_info(client_ip)
 
             if (
@@ -205,10 +205,10 @@ class PromptManager:
                 and "weather_info" in self.base_prompt_template
                 and local_address
             ):
-                # 获取天气信息（使用全局缓存）
+                # Get weather information (using global cache)
                 self._get_weather_info(conn, local_address)
 
-            # 获取配置的上下文数据
+            # Get the configuration context data
             if hasattr(conn, "device_id") and conn.device_id:
                 if (
                     self.base_prompt_template
@@ -231,27 +231,27 @@ class PromptManager:
             return user_prompt
 
         try:
-            # 获取最新的时间信息（不缓存）
+            # Get the latest time information (not cached)
             today_date, today_weekday, lunar_date = self._get_current_time_info()
 
-            # 获取缓存的上下文信息
+            # Get the cached context information
             local_address = ""
             weather_info = ""
 
             if client_ip:
-                # 获取位置信息（从全局缓存）
+                # Get location information (from global cache)
                 local_address = (
                     self.cache_manager.get(self.CacheType.LOCATION, client_ip) or ""
                 )
 
-                # 获取天气信息（从全局缓存）
+                # Get weather information (from global cache)
                 if local_address:
                     weather_info = (
                         self.cache_manager.get(self.CacheType.WEATHER, local_address)
                         or ""
                     )
 
-            # 获取TTS选择的语言，默认值为中文
+            # Get the language selected by TTS, default value is English
             language = (
                 self.config.get("TTS", {})
                 .get(self.config.get("selected_module", {}).get("TTS", ""), {})
@@ -260,7 +260,7 @@ class PromptManager:
             )
             self.logger.bind(tag=TAG).debug(f"Selected language obtained: {language}")
 
-            # 替换模板变量
+            # Replace template variables
             template = Template(self.base_prompt_template)
             enhanced_prompt = template.render(
                 base_prompt=user_prompt,
@@ -283,10 +283,10 @@ class PromptManager:
                 self.CacheType.DEVICE_PROMPT, device_cache_key, enhanced_prompt
             )
             self.logger.bind(tag=TAG).info(
-                f"Successfully built enhanced prompt, length: {len(enhanced_prompt)}"
+                f"[ Prompt Manager ] Successfully built enhanced prompt, length: {len(enhanced_prompt)}"
             )
             return enhanced_prompt
 
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"Failed to build enhanced prompt: {e}")
+            self.logger.bind(tag=TAG).error(f"[ Prompt Manager] Failed to build enhanced prompt: {e}")
             return user_prompt

@@ -239,27 +239,28 @@ class ConnectionHandler:
             # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID1: {self.session_id}")
             # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID2: {cache_manager.get(CacheType.SESSION_ID, "session_id")}")
 
-    # async def async_loop(self):
-    #     try:
-    #         while self.is_alive:
-    #             # 1. Execute your custom state evaluation
-    #             # (Passing 'self' allows the checker to inspect session data or call tools)
-    #             # await check_character_state(self)
-    #             self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
-                
-    #             # 2. Control the check interval (e.g., check every 5 seconds)
-    #             # Using non-blocking asyncio.sleep yields control back to the main server loop
-    #             await asyncio.sleep(5.0)
+    #### my old code #######
+        # async def async_loop(self):
+        #     try:
+        #         while self.is_alive:
+        #             # 1. Execute your custom state evaluation
+        #             # (Passing 'self' allows the checker to inspect session data or call tools)
+        #             # await check_character_state(self)
+        #             self.logger.bind(tag=TAG).info(f"async_loop is running, {self.client_ip} : {self.device_id}")
+                    
+        #             # 2. Control the check interval (e.g., check every 5 seconds)
+        #             # Using non-blocking asyncio.sleep yields control back to the main server loop
+        #             await asyncio.sleep(5.0)
 
-    #     except asyncio.CancelledError:
-    #         print("[MPlush Monitor] Background monitor task was cancelled.")
-    #         self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
-    #     except Exception as e:
-    #         print(f"[MPlush Monitor] Error encountered in state loop: {e}")
-    #         self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
-    #     finally:
-    #         print("[MPlush Monitor] Autonomous state checking loop stopped.")
-    #         self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
+        #     except asyncio.CancelledError:
+        #         print("[MPlush Monitor] Background monitor task was cancelled.")
+        #         self.logger.bind(tag=TAG).info("Background monitor task was cancelled.")
+        #     except Exception as e:
+        #         print(f"[MPlush Monitor] Error encountered in state loop: {e}")
+        #         self.logger.bind(tag=TAG).info(f"Error encountered in state loop: {e}")
+        #     finally:
+        #         print("[MPlush Monitor] Autonomous state checking loop stopped.")
+        #         self.logger.bind(tag=TAG).info("Autonomous state checking loop stopped.")
 
     async def handle_connection(self, ws: websockets.ServerConnection):
         try:

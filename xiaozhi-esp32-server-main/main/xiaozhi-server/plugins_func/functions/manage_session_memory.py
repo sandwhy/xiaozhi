@@ -7,10 +7,10 @@ from core.utils.cache.manager import cache_manager, CacheType
 logger = setup_logging()
 TAG = "manage_session_memory"
 
-get_read_SM_function_desc = {
+get_read_SN_function_desc = {
     "type": "function",
     "function": {
-        "name": "read_session_memory",
+        "name": "read_session_notes",
         "description": "Reads the current session memory parameters json. Used to find out current: active phase, overall activity, milestones, and goals.",
         "parameters": {
             "type": "object",
@@ -20,8 +20,8 @@ get_read_SM_function_desc = {
     },
 }
 
-@register_function("read_session_memory", get_read_SM_function_desc, ToolType.WAIT)
-def read_session_memory():
+@register_function("read_session_notes", get_read_SN_function_desc, ToolType.WAIT)
+def read_session_notes():
     """Reads the local session memory JSON manifest."""
 
     MEMORY_FILE_PATH = cache_manager.get(CacheType.SESSION_FILE_PATH, "file_path")
@@ -39,9 +39,9 @@ def read_session_memory():
         with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         
-        logger.bind(tag=TAG).info(f"session_memory: {data}")
+        logger.bind(tag=TAG).info(f"[ Read Session Notes ]session_notes: {data}")
         return ActionResponse(
-            Action.REQLLM, f"<session_memory>{json.dumps(data, ensure_ascii=False)}</session_memory>"
+            Action.REQLLM, "Function successfully called, action called", f"<session_notes>{json.dumps(data, ensure_ascii=False)}</session_notes>"
         )
     except Exception as e:
         error_msg = f"Failed to read session memory: {str(e)}"
@@ -49,10 +49,10 @@ def read_session_memory():
         return ActionResponse(Action.ERROR, error_msg, None)
 
 
-get_update_SM_function_desc = {
+get_update_SN_function_desc = {
     "type": "function",
     "function": {
-        "name": "update_session_memory",
+        "name": "update_session_notes",
         "description": "Updates the session memory. Expected argument format: {\"phase\": \"Phase 2\", \"goal\": \"Finish math homework\"}.",
         "parameters": {
             "type": "object",
@@ -83,11 +83,11 @@ get_update_SM_function_desc = {
 }
 
 @register_function(
-    name="update_session_memory",
-    desc=get_update_SM_function_desc,
+    name="update_session_notes",
+    desc=get_update_SN_function_desc,
     type=ToolType.WAIT,
 )
-async def update_session_memory(phase: str = None, activity: str = None, goal: str = None, milestones: list = None):
+def update_session_notes(phase: str = None, activity: str = None, goal: str = None, milestones: list = None):
     """
     Updates the environmental session status JSON manifest.
     """
@@ -115,12 +115,13 @@ async def update_session_memory(phase: str = None, activity: str = None, goal: s
         with open(MEMORY_FILE_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
             
-        logger.bind(tag=TAG).info(f"Successfully updated session memory layout: {data}")
-        
+        logger.bind(tag=TAG).info(f"[ Update Session Notes ] session_notes: {phase},{activity},{goal},{milestones}")
         return ActionResponse(
-            Action.REQLLM, f"<success>Successfully updated session memory layout.</success>"
+            action=Action.REQLLM, result="Function successfully called, action called", response=f"say what has been updated"
         )
+
         
     except Exception as e:
-        logger.bind(tag=TAG).error(f"Failed to update session record manifest: {str(e)}")
-        return ActionResponse.error(f"Internal update processing error: {str(e)}")
+        error_msg = f"[ Update Session Notes ] Failed to update session notes: {str(e)}"
+        logger.bind(tag=TAG).error(error_msg)
+        return ActionResponse(Action.ERROR, error_msg, None)
