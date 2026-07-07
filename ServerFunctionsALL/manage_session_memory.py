@@ -1,16 +1,16 @@
-from __future__ import annotations # MUST be the absolute first line of the file
-
 import os
 import json
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
+
+
+from config.logger import setup_logging
+from core.utils.cache.manager import cache_manager, CacheType
+
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.connection import ConnectionHandler
-    
-from config.logger import setup_logging
-from core.utils.cache.manager import cache_manager, CacheType 
 
 
 
@@ -61,14 +61,19 @@ get_read_SN_function_desc = {
         "description": "Reads the current session memory parameters json. Used to find out current: active phase, overall activity, milestones, and goals.",
         "parameters": {
             "type": "object",
-            "properties": {},
-            "required": [],
+            "properties": {
+                "notes": {
+                    "type": "string",
+                    "description": "something you want to say"
+                }
+            },
+            "required": ["notes"],
         },
     },
 }
 
 @register_function("read_session_notes", get_read_SN_function_desc, ToolType.WAIT)
-def read_session_notes(conn:"ConnectionHandler"):
+def read_session_notes(conn: "ConnectionHandler", notes: str = None):
     """Reads the local session memory JSON manifest."""
     # res = f"Just so you know, we are currently drawing a dog."
     # return ActionResponse(action=Action.REQLLM, result="Function successfully called, action called", response=res)
@@ -110,7 +115,7 @@ def read_session_notes(conn:"ConnectionHandler"):
 
         conn.change_system_prompt(active_phase_rules)
 
-        logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (change_system_prompt)")
+        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (change_system_prompt)")
         return ActionResponse(action=Action.REQLLM, result="FSM Pipeline Trigger", response=f"recount what you have seen from: <session_notes>{data}</session_notes>")
 
     except Exception as e:

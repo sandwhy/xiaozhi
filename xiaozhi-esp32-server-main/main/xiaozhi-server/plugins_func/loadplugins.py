@@ -22,4 +22,4 @@ def auto_import_modules(package_name):
         # Import the module
         full_module_name = f"{package_name}.{module_name}"
         importlib.import_module(full_module_name)
-        #logger.bind(tag=TAG).info(f"Module '{full_module_name}' has been loaded")
+        logger.bind(tag=TAG).info(f"Module '{full_module_name}' has been loaded")
