@@ -43,6 +43,8 @@ from core.utils.voiceprint_provider import VoiceprintProvider
 from core.utils.util import get_system_error_response
 from core.utils import textUtils
 
+#### my imports ####
+from core.utils.cache.manager import cache_manager, CacheType
 from core.utils.session_storage import init_session_memory
 
 
@@ -119,7 +121,7 @@ class ConnectionHandler:
     #### initialize variables ####
         self.common_config = config
         self.config = copy.deepcopy(config)
-        self.session_id = str(uuid.uuid4())
+        
         self.logger = setup_logging()
         self.server = server  # Save a reference to the server instance.
 
@@ -232,6 +234,10 @@ class ConnectionHandler:
 
     ###### My variables #######
         # self.is_alive = True
+        self.session_id = str(uuid.uuid4())
+
+            # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID1: {self.session_id}")
+            # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session ID2: {cache_manager.get(CacheType.SESSION_ID, "session_id")}")
 
     # async def async_loop(self):
     #     try:
@@ -572,7 +578,7 @@ class ConnectionHandler:
                 prompt = self.prompt_manager.get_quick_prompt(user_prompt)
                 self.change_system_prompt(prompt)
                 self.logger.bind(tag=TAG).info(
-                    f"Quick component initialization: prompt success {prompt[:50]}..."
+                    f"[initialize userprompt] Quick component initialization: prompt success {prompt[:50]}..."
                 )
 
             """Initialize local components"""
@@ -613,14 +619,11 @@ class ConnectionHandler:
         live telemetry counters to the current network instance.
         """
 
-        # # Ensure a session ID is established for this connection instance
-        # if not hasattr(self, 'session_id') or not self.session_id:
-        #     self.session_id = f"sess_{int(time.time())}"
-
         # 1. Initialize JSON storage architecture via decoupled utility module
         self.session_file_path = init_session_memory(self.session_id)
-        
+        cache_manager.set(CacheType.SESSION_FILE_PATH, "file_path", self.session_file_path)
         self.logger.bind(tag=TAG).info(f"[INITIALIZING CURRENT SESSION MEMORY JSON] Bound storage path to active instance: {self.session_file_path}")
+        # self.logger.bind(tag=TAG).info(f"[CACHE DEBUG] Session File Path: {cache_manager.get(CacheType.SESSION_FILE_PATH, 'file_path')}")
 
     def _init_prompt_enhancement(self):
 
@@ -927,8 +930,9 @@ class ConnectionHandler:
             asyncio.run_coroutine_threadsafe(self.func_handler._initialize(), self.loop)
 
     def change_system_prompt(self, prompt):
+        self.logger.bind(tag=TAG).info(f"[change_system_prompt] user change system prompt: {prompt}")
         self.prompt = prompt
-        # 更新系统prompt至上下文
+        # Update system prompt to context
         self.dialogue.update_system_message(self.prompt)
 
     def chat(self, query, depth=0):
@@ -1223,7 +1227,7 @@ class ConnectionHandler:
                         result = future.result(timeout=tool_call_timeout)
                         tool_results.append((result, tool_call_data))
                         # Report tool call results using public method
-                        enqueue_tool_report(self, tool_call_data['name'], tool_input, str(result.result) if result.result else None, report_tool_call=False)
+                        enqueue_tool_report(self, tool_call_data['name'], tool_input, str(result.result) if result.result else None, report_tool_call=True)
 
                     except Exception as e:
                         self.logger.bind(tag=TAG).error(

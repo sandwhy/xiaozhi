@@ -20,6 +20,8 @@ class CacheType(Enum):
     DEVICE_PROMPT = "device_prompt"
     VOICEPRINT_HEALTH = "voiceprint_health"  # 声纹识别健康检查
     AUDIO_DATA = "audio_data"  # 音频数据缓存
+    SESSION_ID = "session_id"  # 会话ID缓存
+    SESSION_FILE_PATH = "session_file_path"  # 会话文件路径缓存
 
 
 @dataclass
@@ -33,7 +35,7 @@ class CacheConfig:
 
     @classmethod
     def for_type(cls, cache_type: CacheType) -> "CacheConfig":
-        """根据缓存类型返回预设配置"""
+        """Returns the preset configuration based on the cache type."""
         configs = {
             CacheType.LOCATION: cls(
                 strategy=CacheStrategy.TTL, ttl=None, max_size=1000  # 手动失效
@@ -52,6 +54,12 @@ class CacheConfig:
             ),
             CacheType.CONFIG: cls(
                 strategy=CacheStrategy.FIXED_SIZE, ttl=None, max_size=20  # 手动失效
+            ),
+            CacheType.SESSION_ID: cls(
+                strategy=CacheStrategy.TTL, ttl=None, max_size=1000  # 手动失效
+            ),
+            CacheType.SESSION_FILE_PATH: cls(
+                strategy=CacheStrategy.TTL, ttl=None, max_size=1000  # 手动失效
             ),
             CacheType.DEVICE_PROMPT: cls(
                 strategy=CacheStrategy.TTL, ttl=None, max_size=1000  # 手动失效

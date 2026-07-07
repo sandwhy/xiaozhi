@@ -2,6 +2,7 @@
 import os
 import json
 import logging
+from core.utils.cache.manager import cache_manager, CacheType
 
 def init_session_memory(session_id: str, base_dir: str = "./data") -> str:
     """
@@ -24,7 +25,8 @@ def init_session_memory(session_id: str, base_dir: str = "./data") -> str:
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(default_template, f, indent=4)
-            logging.info(f"[Memory Init] Initialized new session memory file at: {file_path}")
+
+            logging.info(f"[Memory Init] Initialized and cached new session memory file at: {file_path}")
         except IOError as e:
             logging.error(f"[Memory Init] Failed to create session storage: {e}")
             

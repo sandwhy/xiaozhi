@@ -83,7 +83,7 @@ class PromptManager:
             cached_template = self.cache_manager.get(self.CacheType.CONFIG, cache_key)
             if cached_template is not None:
                 self.base_prompt_template = cached_template
-                self.logger.bind(tag=TAG).debug("Load base prompt template from cache")
+                self.logger.bind(tag=TAG).debug("[load base prompt] Load base prompt template from cache")
                 return
 
             # Cache miss, read from file
@@ -96,11 +96,11 @@ class PromptManager:
                     self.CacheType.CONFIG, cache_key, template_content
                 )
                 self.base_prompt_template = template_content
-                self.logger.bind(tag=TAG).debug("Successfully loaded base prompt template and cached it")
+                self.logger.bind(tag=TAG).debug("[load base prompt] Successfully loaded base prompt template and cached it")
             else:
                 self.logger.bind(tag=TAG).warning(f"File {template_path} not found")
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"Failed to load prompt template: {e}")
+            self.logger.bind(tag=TAG).error(f"[load base prompt] Failed to load prompt template: {e}")
 
     def get_quick_prompt(self, user_prompt: str, device_id: str = None) -> str:
         """Quickly get system prompt (using user configuration)"""
@@ -109,20 +109,20 @@ class PromptManager:
             self.CacheType.DEVICE_PROMPT, device_cache_key
         )
         if cached_device_prompt is not None:
-            self.logger.bind(tag=TAG).debug(f"Using cached prompt for device {device_id}")
+            self.logger.bind(tag=TAG).debug(f"[quick prompt] Using cached prompt for device {device_id}")
             return cached_device_prompt
         else:
             self.logger.bind(tag=TAG).debug(
-                f"No cached prompt for device {device_id}, using passed prompt"
+                f"[quick prompt] No cached prompt for device {device_id}, using passed prompt"
             )
 
         # Use the passed prompt and cache it (if device ID is available)
         if device_id:
             device_cache_key = f"device_prompt:{device_id}"
             self.cache_manager.set(self.CacheType.CONFIG, device_cache_key, user_prompt)
-            self.logger.bind(tag=TAG).debug(f"Prompt for device {device_id} has been cached")
+            self.logger.bind(tag=TAG).debug(f"[quick prompt] Prompt for device {device_id} has been cached")
 
-        self.logger.bind(tag=TAG).info(f"Using quick prompt: {user_prompt[:50]}...")
+        self.logger.bind(tag=TAG).info(f"[quick prompt] Using quick prompt: {user_prompt[:50]}...")
         return user_prompt
 
     def _get_current_time_info(self) -> tuple:

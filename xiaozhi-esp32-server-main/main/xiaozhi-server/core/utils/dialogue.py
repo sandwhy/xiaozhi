@@ -19,13 +19,13 @@ class Message:
         self.content = content
         self.tool_calls = tool_calls
         self.tool_call_id = tool_call_id
-        self.is_temporary = is_temporary  # 标记临时消息（如工具调用提醒）
+        self.is_temporary = is_temporary  # Mark temporary messages (such as tool call notifications).
 
 
 class Dialogue:
     def __init__(self):
         self.dialogue: List[Message] = []
-        # 获取当前时间
+        # Get current time
         self.current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def put(self, message: Message):
@@ -48,13 +48,13 @@ class Dialogue:
             dialogue.append({"role": m.role, "content": m.content})
 
     def get_llm_dialogue(self) -> List[Dict[str, str]]:
-        # 直接调用get_llm_dialogue_with_memory，传入None作为memory_str
-        # 这样确保说话人功能在所有调用路径下都生效
+        #Directly call `get_llm_dialogue_with_memory`, passing `None` as `memory_str`
+        # This ensures the speaker functionality works in all call paths.
         return self.get_llm_dialogue_with_memory(None, None)
 
     def update_system_message(self, new_content: str):
-        """更新或添加系统消息"""
-        # 查找第一个系统消息
+        """Update or add system message"""
+        # Find the first system message
         system_msg = next((msg for msg in self.dialogue if msg.role == "system"), None)
         if system_msg:
             system_msg.content = new_content
@@ -63,25 +63,25 @@ class Dialogue:
 
     def trim_history(self, max_turns: int = 10) -> int:
         """
-        智能截断对话历史，保留工具调用的完整性
+        Intelligently truncates dialogue history, preserving the integrity of tool calls.
 
         Args:
-            max_turns: 保留的最大对话轮数（每轮 = user + assistant/tool 相关消息）
+            max_turns: The maximum number of dialogue turns to retain (each turn = user + assistant/tool related messages)
 
         Returns:
-            int: 被移除的消息数量
+            int: The number of messages removed
         """
         if len(self.dialogue) <= max_turns * 2 + 1:  # +1 是系统消息
             return 0
 
-        # 分离系统消息和对话消息
+        # Separate system messages and conversation messages
         system_messages = [msg for msg in self.dialogue if msg.role == "system"]
         conversation_messages = [msg for msg in self.dialogue if msg.role != "system"]
 
         if len(conversation_messages) <= max_turns * 2:
             return 0
 
-        # 智能截断：保留完整的工具调用链路
+        # Intelligent truncation: preserve the integrity of tool calls
         keep_messages = []
         i = len(conversation_messages) - 1
         turn_count = 0
@@ -89,28 +89,28 @@ class Dialogue:
         while i >= 0 and turn_count < max_turns:
             msg = conversation_messages[i]
 
-            # 从后向前收集消息
+            # Collect messages from back to front
             if msg.role == "user":
-                # 遇到 user 消息，说明一轮对话开始
+                # Encountering a user message indicates the start of a dialogue round
                 keep_messages.insert(0, msg)
                 turn_count += 1
                 i -= 1
             elif msg.role == "assistant":
-                # 收集 assistant 消息
+                # Collect assistant messages
                 keep_messages.insert(0, msg)
 
-                # 如果这个 assistant 有 tool_calls，需要收集对应的 tool 响应
+                # If this assistant has tool_calls, collect the corresponding tool responses
                 if msg.tool_calls is not None:
                     i -= 1
-                    # 继续向后收集所有相关的 tool 消息
+                    # Continue to collect all relevant tool messages
                     while i >= 0 and conversation_messages[i].role == "tool":
                         keep_messages.insert(0, conversation_messages[i])
                         i -= 1
                 else:
                     i -= 1
             elif msg.role == "tool":
-                # tool 消息应该已经被上面的逻辑收集了
-                # 如果单独遇到，也要保留（防止边界情况）
+                # Tool messages should already be collected by the logic above
+                # If encountered alone, keep it (to prevent boundary cases)
                 keep_messages.insert(0, msg)
                 i -= 1
             else:
@@ -118,7 +118,7 @@ class Dialogue:
 
         removed_count = len(conversation_messages) - len(keep_messages)
 
-        # 重建对话列表
+        # Reconstruct the dialogue list
         self.dialogue = system_messages + keep_messages
 
         return removed_count
@@ -135,14 +135,14 @@ class Dialogue:
         )
 
         if system_message:
-            # 基础系统提示
+            # Base system prompt
             enhanced_system_prompt = system_message.content
-            # 替换时间占位符
+            # Replace time placeholder
             enhanced_system_prompt = enhanced_system_prompt.replace(
                 "{{current_time}}", datetime.now().strftime("%H:%M")
             )
 
-            # 添加说话人个性化描述
+            # Add speaker personalization description
             try:
                 speakers = voiceprint_config.get("speakers", [])
                 if speakers:
@@ -161,10 +161,10 @@ class Dialogue:
                             pass
                     enhanced_system_prompt += "\n\n</speakers_info>"
             except:
-                # 配置读取失败时忽略错误，不影响其他功能
+                # Configuration reading failed, ignore the error and do not affect other functions
                 pass
 
-            # 使用正则表达式匹配 <memory> 标签，不管中间有什么内容
+            # Use regular expressions to match the <memory> tag, regardless of the content in between
             if memory_str is not None:
                 enhanced_system_prompt = re.sub(
                     r"<memory>.*?</memory>",
@@ -174,9 +174,9 @@ class Dialogue:
                 )
             dialogue.append({"role": "system", "content": enhanced_system_prompt})
 
-        # 添加用户和助手的对话
+        # Add user and assistant dialogue
         for m in self.dialogue:
-            if m.role != "system":  # 跳过原始的系统消息
+            if m.role != "system":  # Skip the original system message
                 self.getMessages(m, dialogue)
 
         return dialogue

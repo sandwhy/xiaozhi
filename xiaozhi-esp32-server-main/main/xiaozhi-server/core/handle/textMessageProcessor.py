@@ -25,17 +25,17 @@ class TextMessageProcessor:
                 message_type = msg_json.get("type")
 
                 # Record log
-                conn.logger.bind(tag=TAG).info(f"Received {message_type} message: {message}")
+                conn.logger.bind(tag=TAG).info(f"[textMessageHandler] Received {message_type} message: {message}")
 
                 # Get and execute handler
                 handler = self.registry.get_handler(message_type)
                 if handler:
                     await handler.handle(conn, msg_json)
                 else:
-                    conn.logger.bind(tag=TAG).error(f"Received unknown message type: {message}")
+                    conn.logger.bind(tag=TAG).error(f"[textMessageHandler] Received unknown message type: {message}")
             # Process pure numeric message
             elif isinstance(msg_json, int):
-                conn.logger.bind(tag=TAG).info(f"Received numeric message: {message}")
+                conn.logger.bind(tag=TAG).info(f"[textMessageHandler] Received numeric message: {message}")
                 await conn.websocket.send(message)
 
         except json.JSONDecodeError:

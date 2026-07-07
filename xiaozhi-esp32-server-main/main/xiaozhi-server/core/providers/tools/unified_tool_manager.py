@@ -91,14 +91,14 @@ class ToolManager:
                     response=f"工具类型 {tool_type.value} 的执行器未注册",
                 )
 
-            # 执行工具
-            self.logger.info(f"执行工具: {tool_name}，参数: {arguments}")
+            # Execution tools   
+            self.logger.info(f"Execution tools: {tool_name}, parameters: {arguments}")
             result = await executor.execute(self.conn, tool_name, arguments)
-            self.logger.debug(f"工具执行结果: {result}")
+            self.logger.debug(f"Tool execution result: {result}")
             return result
 
         except Exception as e:
-            self.logger.error(f"执行工具 {tool_name} 时出错: {e}")
+            self.logger.error(f"Execution tools {tool_name} error: {e}")
             return ActionResponse(action=Action.ERROR, response=str(e))
 
     def get_supported_tool_names(self) -> List[str]:
