@@ -2,6 +2,8 @@ import uuid
 import re
 from typing import List, Dict
 from datetime import datetime
+from config.logger import setup_logging
+
 
 
 class Message:
@@ -20,6 +22,7 @@ class Message:
         self.tool_calls = tool_calls
         self.tool_call_id = tool_call_id
         self.is_temporary = is_temporary  # Mark temporary messages (such as tool call notifications).
+        
 
 
 class Dialogue:
@@ -55,9 +58,13 @@ class Dialogue:
     def update_system_message(self, new_content: str):
         """Update or add system message"""
         # Find the first system message
+        # logger = setup_logging()
         system_msg = next((msg for msg in self.dialogue if msg.role == "system"), None)
+        # logger.bind(tag=TAG).info(f"[update system message] execute")
+
         if system_msg:
             system_msg.content = new_content
+            # logger.bind(tag=TAG).info(f"[update system message] user changed system prompt: {new_content}")
         else:
             self.put(Message(role="system", content=new_content))
 

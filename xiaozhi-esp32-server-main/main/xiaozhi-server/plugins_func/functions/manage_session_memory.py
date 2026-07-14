@@ -1,7 +1,7 @@
 import os
 import json
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
-
+from core.utils.dialogue import Message, Dialogue
 
 from config.logger import setup_logging
 from core.utils.cache.manager import cache_manager, CacheType
@@ -13,10 +13,10 @@ if TYPE_CHECKING:
     from core.connection import ConnectionHandler
 
 
-
-
 TAG = __name__
 logger = setup_logging()
+
+
 
 def do_someMATHS():
     return 25+30
@@ -62,21 +62,21 @@ get_read_SN_function_desc = {
         "parameters": {
             "type": "object",
             "properties": {
-                "notes": {
-                    "type": "string",
-                    "description": "something you want to say"
-                }
+
             },
-            "required": ["notes"],
+            "required": [],
         },
     },
 }
 
+
+
 @register_function("read_session_notes", get_read_SN_function_desc, ToolType.WAIT)
-def read_session_notes(conn: "ConnectionHandler", notes: str = None):
+def read_session_notes():
     """Reads the local session memory JSON manifest."""
     # res = f"Just so you know, we are currently drawing a dog."
     # return ActionResponse(action=Action.REQLLM, result="Function successfully called, action called", response=res)
+    MEMORY_FILE_PATH = cache_manager.get(CacheType.SESSION_FILE_PATH, "file_path")
 
     if not os.path.exists(MEMORY_FILE_PATH):
         error_msg = f"memory is not found in {MEMORY_FILE_PATH}"
@@ -88,6 +88,7 @@ def read_session_notes(conn: "ConnectionHandler", notes: str = None):
     # textFile = load_phase_prompt(phase_id=1)
     # logger.bind(tag=TAG).info(f"[DEBUG----------------------] textFile: {textFile}")
 
+    dialogue = Dialogue()
 
     try:
         with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
@@ -105,15 +106,26 @@ def read_session_notes(conn: "ConnectionHandler", notes: str = None):
             logger.bind(tag=TAG).warning(f"Invalid phase format: {current_phase}. Resetting conversion to 1.")
             current_phase = 1
         
-        logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Extracted current phase id: {current_phase}")
+        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Extracted current phase id: {current_phase}")
         
         active_phase_rules = load_phase_prompt(current_phase)
 
         logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (load_phase_prompt)")
-        logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] current active rules: {active_phase_rules}")
+        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] current active rules: {active_phase_rules}")
 
+        try:
+            dialogue.update_system_message(active_phase_rules)
+            
+        except Exception as e:
+            error_msg = f"Failed to update system prompt: {str(e)}"
+            logger.bind(tag=TAG).error(error_msg)
+            return ActionResponse(Action.ERROR, error_msg, None)
+            
+        
 
-        conn.change_system_prompt(active_phase_rules)
+        logger.bind(tag=TAG).info(f"[change_system_prompt] user change system prompt: {active_phase_rules}")
+
+        # conn.change_system_prompt(active_phase_rules)
 
         # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (change_system_prompt)")
         return ActionResponse(action=Action.REQLLM, result="FSM Pipeline Trigger", response=f"recount what you have seen from: <session_notes>{data}</session_notes>")

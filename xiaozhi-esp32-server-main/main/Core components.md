@@ -178,7 +178,7 @@ How it works: On every message turn, your message router reads the file. If it s
 [Sensory Task Thread] ──> Read Metrics ─────────────────────────────┼──> [Prompt Enhancer]
                                                                     │
                                                                     ▼
-[Finalized Payload] ──> [Ollama Engine]
+                                                            [Finalized Payload] ──> [Ollama Engine]
 
 
 [User Utterance] ──> Read session_memory.json (Find Phase ID)
@@ -201,6 +201,9 @@ On every message turn (inside core/handle/textMessageProcessor.py or the request
                                         │
                                         ▼
                             [Final Dynamic Prompt] ──> Bind Phase-Specific Tools ──> [Ollama LLM]
+
+[Phase 1: Exploration] ──(Goal & Milestones Set)──> 
+[Phase 2: Assisting] ──(All Milestones Met)──> [Phase 3: Congratulating]
 
 ## End of Phase Flow
 

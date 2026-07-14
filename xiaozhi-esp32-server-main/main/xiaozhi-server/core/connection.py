@@ -46,7 +46,7 @@ from core.utils import textUtils
 #### my imports ####
 from core.utils.cache.manager import cache_manager, CacheType
 from core.utils.session_storage import init_session_memory
-
+from plugins_func.functions.manage_session_memory import read_session_notes
 
 
 TAG = __name__
@@ -231,6 +231,7 @@ class ConnectionHandler:
 
         # Initialize prompt manager
         self.prompt_manager = PromptManager(self.config, self.logger)
+        # self.dynamic_prompt_manager = DynamicPromptManager(self.logger)
 
     ###### My variables #######
         self.is_alive = True
@@ -246,7 +247,7 @@ class ConnectionHandler:
     #             # 1. Execute your custom state evaluation
     #             # (Passing 'self' allows the checker to inspect session data or call tools)
     #             # await check_character_state(self)
-
+    #             read_session_notes()
     #             self.logger.bind(tag=TAG).info(f"[          async_loop is running            ], {self.client_ip} : {self.device_id}")
                 
     #             # 2. Control the check interval (e.g., check every 5 seconds)
@@ -1016,7 +1017,7 @@ class ConnectionHandler:
         ):
             functions = self.func_handler.get_functions()
             # self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
-            self.logger.bind(tag=TAG).info(f"Got functions")
+            self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
 
         # Long dialogue tool call rule reinforcement: dynamically generate reminders based on currently available tools
         tool_call_reminder = None
