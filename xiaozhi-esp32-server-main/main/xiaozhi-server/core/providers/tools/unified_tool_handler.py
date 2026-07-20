@@ -221,7 +221,7 @@ class UnifiedToolHandler:
         """注册IoT设备工具"""
         self.device_iot_executor.register_iot_tools(descriptors)
         self.tool_manager.refresh_tools()
-        self.logger.info(f"注册了{len(descriptors)}个IoT设备的工具")
+        self.logger.info(f"Registered {len(descriptors)} IoT device tools")
 
     def get_tool_statistics(self) -> Dict[str, int]:
         """获取工具统计信息"""
@@ -239,6 +239,6 @@ class UnifiedToolHandler:
             ):
                 await self.conn.mcp_endpoint_client.close()
 
-            self.logger.info("工具处理器清理完成")
+            self.logger.info("Tool processor cleanup complete")
         except Exception as e:
-            self.logger.error(f"工具处理器清理失败: {e}")
+            self.logger.error(f"Tool processor cleanup failed: {e}")

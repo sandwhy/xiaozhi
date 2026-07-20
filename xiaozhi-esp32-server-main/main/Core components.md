@@ -1,3 +1,5 @@
+cd .\xiaozhi-esp32-server-main\main\xiaozhi-server\digital-human\
+
 Core components 
 form providers, 
 

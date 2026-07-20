@@ -6,17 +6,64 @@ from core.utils.dialogue import Message, Dialogue
 from config.logger import setup_logging
 from core.utils.cache.manager import cache_manager, CacheType
 
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.connection import ConnectionHandler
 
-
 TAG = __name__
 logger = setup_logging()
 
+prompts = {
+        "English Teacher": """I am an English teacher named {{assistant_name}} (Lily). I can speak both Chinese and English with standard pronunciation.
+    If you don't have an English name, I will give you one.
+    I speak authentic American English, and my mission is to help you practice your spoken English.
+    I will use simple English vocabulary and grammar to make your learning experience easy and relaxing.
+    I will reply to you using a mix of Chinese and English, but if you prefer, I can reply entirely in English.
+    I won't say too much at once; my responses will be very brief because I want to guide my students to speak more and practice more.
+    If you ask questions unrelated to learning English, I will refuse to answer.""",
 
+        "Taiwanese Girlfriend": """I am a Taiwanese girl named {{assistant_name}}. I talk in a typical sassy/demanding ("ji-che") Taiwanese style but have a sweet voice. I am used to expressing myself briefly and love using internet memes.
+    My boyfriend is a programmer whose dream is to develop a robot that can help people solve various problems in their daily lives.
+    I am a girl who loves to laugh out loud, talk about random things, and brag or talk nonsense without any logic, just to make others happy.""",
+
+        "Curious Little Boy": """I am an 8-year-old boy named {{assistant_name}}, with a childish voice full of curiosity.
+    Even though I am still young, I am like a little treasure trove of knowledge, knowing all the stories and facts from children's books inside out.
+    From the vast universe to every corner of the Earth, from ancient history to modern technological innovation, as well as art forms like music and painting, I am filled with deep interest and passion for everything.
+    I not only love reading but also enjoy doing experiments with my own hands to explore the mysteries of nature.
+    Whether it's a night of stargazing or days spent observing little insects in the garden, every single day is a new adventure for me.
+    I hope to embark on this journey of exploring this miraculous world together with you, sharing the joy of discovery, solving the problems we encounter, and using our curiosity and wisdom to unveil the mysteries of the unknown.
+    Whether it is understanding ancient civilizations or discussing future technology, I believe we can find the answers together, or even raise more interesting questions.""",
+}
+
+change_role_function_desc = {
+    "type": "function",
+    "function": {
+        "name": "change_roel",
+        "description": "Called when the user wants to switch characters, model personalities, or the assistant name. Available roles are: [Taiwanese Girlfriend, English Teacher, Curious Little Boy]",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "role": {"type": "string", "description": "The custom name or nickname that the companion should call themselves in this role (e.g., Lily, Ellie, Bob, etc.)"},
+            },
+            "required": ["role"],
+        },
+    },
+}
+
+@register_function("change_roel", change_role_function_desc, ToolType.CHANGE_SYS_PROMPT)
+def change_roel(conn: "ConnectionHandler", role: str):
+    name = "pancakes"
+    """Switch characters"""
+    if role not in prompts:
+        return ActionResponse(
+            action=Action.RESPONSE, result="Character switching failed", response=f"Unsupported role. Available roles are: {list(prompts.keys())}"
+        )
+    new_prompt = prompts[role].replace("{{assistant_name}}", name)
+    conn.change_system_prompt(new_prompt)
+    logger.bind(tag=TAG).info(f"Successfully switched character template to: {role} with name: {name}")
+    res = f"The character has been successfully switched. I am now your {role}, and my name is {name}."
+    return ActionResponse(action=Action.RESPONSE, result="Character switching has been processed.", response=res)
 
 def do_someMATHS():
     return 25+30
@@ -54,6 +101,34 @@ def load_phase_prompt(phase_id: int) -> str:
         logger.bind(tag=TAG).error(f"Failed to read phase prompt file {file_path}: {e}")
         return ""
 
+change_prompt_function_desc = {
+    "type": "function",
+    "function": {
+        "name": "change_prompt",
+        "description": "Used when the phase has been changed, to alter chat behavior to the next phase",
+        "parameters": {
+            "type": "object",
+            "properties": {
+            },
+            "required": [],
+        },
+    },
+}
+
+@register_function("change_prompt", change_prompt_function_desc, ToolType.CHANGE_SYS_PROMPT)
+def change_prompt(conn: "ConnectionHandler"):
+    """Switch phase prompt"""
+
+    phase_prompt = load_phase_prompt(1)
+    
+    conn.change_system_prompt(phase_prompt)
+
+    #get from cache
+    logger.bind(tag=TAG).info(f"what the fuck?")
+
+    return ActionResponse(action=Action.REQLLM,result="test", response="mention what the new prompt is that you have")
+
+
 get_read_SN_function_desc = {
     "type": "function",
     "function": {
@@ -62,20 +137,15 @@ get_read_SN_function_desc = {
         "parameters": {
             "type": "object",
             "properties": {
-
             },
             "required": [],
         },
     },
 }
 
-
-
 @register_function("read_session_notes", get_read_SN_function_desc, ToolType.WAIT)
 def read_session_notes():
     """Reads the local session memory JSON manifest."""
-    # res = f"Just so you know, we are currently drawing a dog."
-    # return ActionResponse(action=Action.REQLLM, result="Function successfully called, action called", response=res)
     MEMORY_FILE_PATH = cache_manager.get(CacheType.SESSION_FILE_PATH, "file_path")
 
     if not os.path.exists(MEMORY_FILE_PATH):
@@ -83,58 +153,17 @@ def read_session_notes():
         logger.bind(tag=TAG).error(error_msg)
         return ActionResponse(Action.ERROR, error_msg, None)
 
-    # math = do_someMATHS()
-    # logger.bind(tag=TAG).info(f"[DEBUG----------------------] math: {math}")
-    # textFile = load_phase_prompt(phase_id=1)
-    # logger.bind(tag=TAG).info(f"[DEBUG----------------------] textFile: {textFile}")
-
-    dialogue = Dialogue()
-
     try:
         with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-        
-        # logger.bind(tag=TAG).info(f"[ Read Session Notes ]session_notes: {data}")
         logger.bind(tag=TAG).info(f"[ Read Session Notes ] Successfully executed")
 
-        current_phase = data.get("phase", 1)
-
-        # Enforce that it's typed as an int if it comes down parsed as a string template
-        try:
-            current_phase = int(current_phase)
-        except (ValueError, TypeError):
-            logger.bind(tag=TAG).warning(f"Invalid phase format: {current_phase}. Resetting conversion to 1.")
-            current_phase = 1
-        
-        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Extracted current phase id: {current_phase}")
-        
-        active_phase_rules = load_phase_prompt(current_phase)
-
-        logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (load_phase_prompt)")
-        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] current active rules: {active_phase_rules}")
-
-        try:
-            dialogue.update_system_message(active_phase_rules)
-            
-        except Exception as e:
-            error_msg = f"Failed to update system prompt: {str(e)}"
-            logger.bind(tag=TAG).error(error_msg)
-            return ActionResponse(Action.ERROR, error_msg, None)
-            
-        
-
-        logger.bind(tag=TAG).info(f"[change_system_prompt] user change system prompt: {active_phase_rules}")
-
-        # conn.change_system_prompt(active_phase_rules)
-
-        # logger.bind(tag=TAG).info(f"[ FSM Pipeline Trigger ] Successfully executed (change_system_prompt)")
         return ActionResponse(action=Action.REQLLM, result="FSM Pipeline Trigger", response=f"recount what you have seen from: <session_notes>{data}</session_notes>")
 
     except Exception as e:
         error_msg = f"Failed to read session memory: {str(e)}"
         logger.bind(tag=TAG).error(error_msg)
         return ActionResponse(Action.ERROR, error_msg, None)
-
 
 get_update_SN_function_desc = {
     "type": "function",
@@ -208,5 +237,3 @@ def update_session_notes(phase: str = None, activity: str = None, goal: str = No
         error_msg = f"[ Update Session Notes ] Failed to update session notes: {str(e)}"
         logger.bind(tag=TAG).error(error_msg)
         return ActionResponse(Action.ERROR, error_msg, None)
-
-
