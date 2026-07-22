@@ -35,7 +35,6 @@ prompts = {
     I hope to embark on this journey of exploring this miraculous world together with you, sharing the joy of discovery, solving the problems we encounter, and using our curiosity and wisdom to unveil the mysteries of the unknown.
     Whether it is understanding ancient civilizations or discussing future technology, I believe we can find the answers together, or even raise more interesting questions.""",
 }
-
 change_role_function_desc = {
     "type": "function",
     "function": {
@@ -50,7 +49,6 @@ change_role_function_desc = {
         },
     },
 }
-
 @register_function("change_roel", change_role_function_desc, ToolType.CHANGE_SYS_PROMPT)
 def change_roel(conn: "ConnectionHandler", role: str):
     name = "pancakes"
@@ -65,9 +63,7 @@ def change_roel(conn: "ConnectionHandler", role: str):
     res = f"The character has been successfully switched. I am now your {role}, and my name is {name}."
     return ActionResponse(action=Action.RESPONSE, result="Character switching has been processed.", response=res)
 
-def do_someMATHS():
-    return 25+30
-
+######## Functions ###########
 def load_phase_prompt(phase_id: int) -> str:
     """
     Safely reads and returns the text content of a targeted phase prompt file.
@@ -101,6 +97,8 @@ def load_phase_prompt(phase_id: int) -> str:
         logger.bind(tag=TAG).error(f"Failed to read phase prompt file {file_path}: {e}")
         return ""
 
+
+######## Export Functions ###########
 change_prompt_function_desc = {
     "type": "function",
     "function": {
@@ -114,17 +112,13 @@ change_prompt_function_desc = {
         },
     },
 }
-
 @register_function("change_prompt", change_prompt_function_desc, ToolType.CHANGE_SYS_PROMPT)
-def change_prompt(conn: "ConnectionHandler"):
+def change_prompt(conn: "ConnectionHandler", phase: int):
     """Switch phase prompt"""
 
-    phase_prompt = load_phase_prompt(1)
+    phase_prompt = load_phase_prompt(phase)
     
     conn.change_system_prompt(phase_prompt)
-
-    #get from cache
-    logger.bind(tag=TAG).info(f"what the fuck?")
 
     return ActionResponse(action=Action.REQLLM,result="test", response="mention what the new prompt is that you have")
 
@@ -142,9 +136,8 @@ get_read_SN_function_desc = {
         },
     },
 }
-
-@register_function("read_session_notes", get_read_SN_function_desc, ToolType.WAIT)
-def read_session_notes():
+@register_function("read_session_notes", get_read_SN_function_desc, ToolType.CHANGE_SYS_PROMPT)
+def read_session_notes(conn: "ConnectionHandler"):
     """Reads the local session memory JSON manifest."""
     MEMORY_FILE_PATH = cache_manager.get(CacheType.SESSION_FILE_PATH, "file_path")
 
@@ -156,14 +149,29 @@ def read_session_notes():
     try:
         with open(MEMORY_FILE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-        logger.bind(tag=TAG).info(f"[ Read Session Notes ] Successfully executed")
+            
+        logger.bind(tag=TAG).info("[ Read Session Notes ] Successfully executed")
+        logger.bind(tag=TAG).info(f"[ Session Notes ] {data}")
 
-        return ActionResponse(action=Action.REQLLM, result="FSM Pipeline Trigger", response=f"recount what you have seen from: <session_notes>{data}</session_notes>")
+        # --- EXTRACT DATA FROM JSON ---
+        phase = data.get("phase", None)
+
+        # Format message response for LLM context
+
+        # change_prompt(conn, phase=phase)
+
+
+        phase_prompt = load_phase_prompt(phase)
+        
+        conn.change_system_prompt(phase_prompt)
+
+        return ActionResponse(action=Action.REQLLM,result="test", response="mention what the new prompt is that you have")
 
     except Exception as e:
         error_msg = f"Failed to read session memory: {str(e)}"
         logger.bind(tag=TAG).error(error_msg)
         return ActionResponse(Action.ERROR, error_msg, None)
+
 
 get_update_SN_function_desc = {
     "type": "function",
@@ -197,7 +205,6 @@ get_update_SN_function_desc = {
         },  
     },
 }
-
 @register_function(name="update_session_notes", desc=get_update_SN_function_desc, type=ToolType.WAIT)
 def update_session_notes(phase: str = None, activity: str = None, goal: str = None, milestones: list = None):
     """

@@ -95,29 +95,24 @@ get_lunar_function_desc = {
 - prompt_manager.py can add context information into the base prompt
 - agennt-basep-prompt.txt is the base prompt template
 
-<do figgure out later> when the server prompts the llm model, it sends out instructions and prompts. takes the response and filters it, then uses that. but it could also force the ai to ommit things while thinking and such..
+1. config.yaml contains "prompt" that initializes first from startup, kind of redundant but they do that
+2. connection.py _init_prompt_enhancement calls prompt_manager.get_enhanced_prompt then sets this as the finalized prompt for the llm. (by calling connection.py change_prompt)
+3. <findOut: if the dynamic prompting changes this?>
 
-runnning deepseek-r1:1.5b caused issuse where the ai rambles on and on, long, kind of incoherent responses
-possible reasons for this being the model is a thinking model, which our server strips, and its a small model being injected a large prompt file 'agennt-base-prompt.txt'
+for some reason, [ change_system_prompt ] is happening first before [ initialize userprompt ], but they do the same thing of getting the quickprompt nvm
 
-what actually happened today?
-found out that main loop processes occurs at conenction.py, chat function
-this loop processes the messages from the esp32
-and generates the responses, using the cores
+its [ quick prompt ] > [ change_system_prompt ] > [ intialize userprompt ] (this sets up the config.yaml prompt) which saves to for some reason (self.CacheType.CONFIG)
+THEN it initializes connection.py _init_prompt_enhancement leading to calling prompt manager [ get_enhanced_prompt ] which saves to (CacheType.DEVICE_PROMPT, device_cache_key, enhanced_prompt)
 
-tested the llm performance in local test server, found issues, prolly because its a thinking type and small. 
+quick prompt checks if there is cached device prompt if there is none, get the one from config.yaml this suggest that get_quick_prompt its a way to quickly change the prompt... but the cace its saving to is: self.CacheType.CONFIG 
 
-llm.py calls up ollama.py, within ollama.py we are prompting the ai, then modifying it directly to be used in tts (standard procedures for tts apparently)
+where as [ get_enhanced_prompt ] sets at self.CacheType.DEVICE_PROMPT....... prpomt_manager.py enhanced prompt builds the enhanced prompt template and saves it in cache. this suggest that the cache isnt the only thing that changes the thing. bcs change system prompt is calling on dialouge.
 
-changed to a non thinking model, works quite well
-
-<for expansion> modify the prompt to suite the orignial vision. change the tts sounds.
+Then the change_role tool routes over to connection.py [change_system_prompt]
 
 ## End of Prompting
 
 ## Memory 
-![alt text](image.png)
-
 currently using powermem. just had to set it up a bit. 
 there are a couple ai working on different parts of it. for conversation and memory saving (embedding) they use different ai
 seems like mcp is involved, but im not sure. seems like i did little to no configuration to make it work tho, its like plug and play........
@@ -204,8 +199,7 @@ On every message turn (inside core/handle/textMessageProcessor.py or the request
                                         ▼
                             [Final Dynamic Prompt] ──> Bind Phase-Specific Tools ──> [Ollama LLM]
 
-[Phase 1: Exploration] ──(Goal & Milestones Set)──> 
-[Phase 2: Assisting] ──(All Milestones Met)──> [Phase 3: Congratulating]
+[Phase 1: Exploration] ──(Goal & Milestones Set)──> [Phase 2: Assisting] ──(All Milestones Met)──> [Phase 3: Congratulating]
 
 ## End of Phase Flow
 
@@ -226,6 +220,17 @@ current clue:
 
     def get(
     self, cache_type: CacheType, key: str, namespace: str = "")
-    
+
+by coppy and pasting the change role function, i was able to have it work in the manage_session_memory.py file. 
 
 ## End of Prompt Injection
+
+## whats after that?
+1. dynamic prompting has worked
+2. have to find out how to have it start with phase 1 prompt, then that be changed later. (could be done while initializing)
+3. have to set the tool to detect phase from json, then call the phase prompt from it.
+4. do some prompt engineering.
+
+ok 21 jul session 2.
+
+all i did was some code using json to get the phase :/

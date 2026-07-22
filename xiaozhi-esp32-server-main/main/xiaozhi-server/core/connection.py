@@ -581,7 +581,7 @@ class ConnectionHandler:
                 prompt = self.prompt_manager.get_quick_prompt(user_prompt)
                 self.change_system_prompt(prompt)
                 self.logger.bind(tag=TAG).info(
-                    f"[initialize userprompt] Quick component initialization: prompt success {prompt[:50]}..."
+                    f"[initialize userprompt] Quick component initialization: prompt success {prompt}..."
                 )
 
             """Initialize local components"""
@@ -637,7 +637,7 @@ class ConnectionHandler:
         )
         if enhanced_prompt:
             self.change_system_prompt(enhanced_prompt)
-            self.logger.bind(tag=TAG).debug("System prompt enhanced and updated")
+            self.logger.bind(tag=TAG).debug("[ Initialize System Prompt Enhancement ] System prompt enhanced and updated")
 
     def _init_report_threads(self):
         """Initialize ASR and TTS reporting threads"""
@@ -1017,7 +1017,7 @@ class ConnectionHandler:
         ):
             functions = self.func_handler.get_functions()
             # self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
-            self.logger.bind(tag=TAG).info(f"Got functions: {functions}")
+            self.logger.bind(tag=TAG).info(f"[ Functions] got functions")
 
         # Long dialogue tool call rule reinforcement: dynamically generate reminders based on currently available tools
         tool_call_reminder = None

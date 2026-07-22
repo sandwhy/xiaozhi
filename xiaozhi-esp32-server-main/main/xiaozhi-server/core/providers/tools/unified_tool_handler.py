@@ -141,9 +141,9 @@ class UnifiedToolHandler:
         self, conn, function_call_data: Dict[str, Any]
     ) -> Optional[ActionResponse]:
         """Handle LLM function call"""
-        print("\n\n\n\n\n   HELLO  THIS IS   A   TO HANDLE FUNCTION CALL  \n\n\n\n")
+        print(f"\n [ Handle LLM Function Call ]: {function_call_data["name"]}  Arguments: {function_call_data["arguments"]} \n")
         try:
-            # 处理多函数调用
+            # Handling multiple function calls
             if "function_calls" in function_call_data:
                 responses = []
                 for call in function_call_data["function_calls"]:
@@ -153,7 +153,7 @@ class UnifiedToolHandler:
                     responses.append(result)
                 return self._combine_responses(responses)
 
-            # 处理单函数调用
+            # Handling single function calls
             function_name = function_call_data["name"]
             arguments = function_call_data.get("arguments", {})
 

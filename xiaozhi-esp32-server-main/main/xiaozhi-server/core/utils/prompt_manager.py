@@ -96,7 +96,7 @@ class PromptManager:
                     self.CacheType.CONFIG, cache_key, template_content
                 )
                 self.base_prompt_template = template_content
-                self.logger.bind(tag=TAG).debug(f"[load base prompt] Successfully loaded base prompt template and cached it\n things: {cache_key} : {template_content[:100]}")
+                self.logger.bind(tag=TAG).debug(f"[load base prompt] Successfully loaded base prompt template and cached it\n things: {cache_key} : {template_content[:50]}")
             else:
                 self.logger.bind(tag=TAG).warning(f"File {template_path} not found")
         except Exception as e:
@@ -225,7 +225,7 @@ class PromptManager:
 
     def build_enhanced_prompt(
         self, user_prompt: str, device_id: str, client_ip: str = None, *args, **kwargs
-    ) -> str:
+        ) -> str:
         """Build enhanced system prompt"""
         if not self.base_prompt_template:
             return user_prompt
@@ -282,8 +282,11 @@ class PromptManager:
             self.cache_manager.set(
                 self.CacheType.DEVICE_PROMPT, device_cache_key, enhanced_prompt
             )
+
+            self.logger.bind(tag=TAG).debug(f"[ get_enhanced_prompt ] has been cached in: DEVICE_PROMPT with key: {device_cache_key}")
+
             self.logger.bind(tag=TAG).info(
-                f"[ Prompt Manager ] Successfully built enhanced prompt, length: {len(enhanced_prompt)}"
+                f"[ get_enhanced_prompt ] Successfully built enhanced prompt, length: {len(enhanced_prompt)}"
             )
             return enhanced_prompt
 

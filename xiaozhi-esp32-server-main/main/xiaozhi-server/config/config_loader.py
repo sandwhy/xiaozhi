@@ -79,7 +79,8 @@ async def get_config_from_api_async(config):
             "auth_key": config["server"].get("auth_key", ""),
         }
     config_data["server"]["auth"] = {"enabled": auth_enabled}
-    # 如果服务器没有prompt_template，则从本地配置读取
+    # If the server does not have a prompt_template, it will be read from the local configuration.
+    
     if not config_data.get("prompt_template"):
         config_data["prompt_template"] = config.get("prompt_template")
     return config_data
